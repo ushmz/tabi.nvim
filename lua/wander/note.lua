@@ -1,7 +1,7 @@
 ---@class WanderNote
 local M = {}
 
-local utils = require('wander.utils')
+local utils = require("wander.utils")
 
 ---@class NoteData
 ---@field id string
@@ -20,7 +20,7 @@ function M.create(file_path, line, content)
     id = utils.uuid(),
     file = file_path,
     line = line,
-    content = content or '',
+    content = content or "",
     created_at = utils.timestamp(),
   }
 end
@@ -31,31 +31,31 @@ end
 ---@return string
 function M.get_preview(note, length)
   length = length or 30
-  local content = note.content:gsub('\n', ' '):gsub('%s+', ' ')
+  local content = note.content:gsub("\n", " "):gsub("%s+", " ")
   if #content <= length then
     return content
   end
-  return content:sub(1, length) .. '...'
+  return content:sub(1, length) .. "..."
 end
 
 --- Check if note is empty
 ---@param note NoteData
 ---@return boolean
 function M.is_empty(note)
-  return note.content == '' or note.content:match('^%s*$') ~= nil
+  return note.content == "" or note.content:match("^%s*$") ~= nil
 end
 
 --- Get note title (first line of content)
 ---@param note NoteData
 ---@return string
 function M.get_title(note)
-  local first_line = note.content:match('^[^\n]+')
+  local first_line = note.content:match("^[^\n]+")
   if not first_line then
-    return ''
+    return ""
   end
 
   -- Remove markdown heading markers
-  first_line = first_line:gsub('^#+%s*', '')
+  first_line = first_line:gsub("^#+%s*", "")
   return vim.trim(first_line)
 end
 
@@ -64,12 +64,12 @@ end
 ---@return string
 function M.format(note)
   local title = M.get_title(note)
-  if title == '' then
+  if title == "" then
     title = M.get_preview(note, 50)
   end
 
-  local file_name = vim.fn.fnamemodify(note.file, ':t')
-  return string.format('%s:%d - %s', file_name, note.line, title)
+  local file_name = vim.fn.fnamemodify(note.file, ":t")
+  return string.format("%s:%d - %s", file_name, note.line, title)
 end
 
 return M

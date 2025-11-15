@@ -27,16 +27,16 @@ local M = {}
 --- Default configuration
 M.defaults = {
   storage = {
-    backend = 'local', -- 'local' (.git/wander/) or 'global' (XDG_DATA_HOME)
+    backend = "local", -- 'local' (.git/wander/) or 'global' (XDG_DATA_HOME)
   },
   ui = {
-    selector = 'native', -- 'native', 'telescope', or 'float'
+    selector = "native", -- 'native', 'telescope', or 'float'
     note_preview_length = 30,
     use_icons = true,
     float_config = {
       width = 60,
       height = 10,
-      border = 'rounded',
+      border = "rounded",
     },
     telescope = {
       theme = nil,
@@ -51,7 +51,7 @@ M.options = vim.deepcopy(M.defaults)
 --- Setup configuration
 ---@param opts WanderOptions|nil
 function M.setup(opts)
-  M.options = vim.tbl_deep_extend('force', M.defaults, opts or {})
+  M.options = vim.tbl_deep_extend("force", M.defaults, opts or {})
 end
 
 --- Get current configuration

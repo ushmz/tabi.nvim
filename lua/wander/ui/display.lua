@@ -1,22 +1,22 @@
 ---@class WanderDisplay
 local M = {}
 
-local config = require('wander.config')
-local note_module = require('wander.note')
+local config = require("wander.config")
+local note_module = require("wander.note")
 
 -- Namespace for virtual text and signs
-local ns = vim.api.nvim_create_namespace('wander')
+local ns = vim.api.nvim_create_namespace("wander")
 
 -- Sign name
-local SIGN_NAME = 'WanderNote'
+local SIGN_NAME = "WanderNote"
 
 --- Initialize display (set up signs)
 function M.init()
   -- Define sign
   vim.fn.sign_define(SIGN_NAME, {
-    text = '', -- Use icon or fallback
-    texthl = 'WanderNoteSign',
-    numhl = 'WanderLineNr',
+    text = "", -- Use icon or fallback
+    texthl = "WanderNoteSign",
+    numhl = "WanderLineNr",
   })
 end
 
@@ -27,7 +27,7 @@ function M.clear_buffer(bufnr)
   vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
 
   -- Clear signs
-  vim.fn.sign_unplace('wander', { buffer = bufnr })
+  vim.fn.sign_unplace("wander", { buffer = bufnr })
 end
 
 --- Display a note in the buffer
@@ -43,7 +43,7 @@ function M.display_note(bufnr, note)
 
   -- Add sign
   if cfg.ui.use_icons then
-    vim.fn.sign_place(0, 'wander', SIGN_NAME, bufnr, {
+    vim.fn.sign_place(0, "wander", SIGN_NAME, bufnr, {
       lnum = note.line,
       priority = 10,
     })
@@ -51,10 +51,10 @@ function M.display_note(bufnr, note)
 
   -- Add virtual text with preview
   local preview = note_module.get_preview(note, cfg.ui.note_preview_length)
-  if preview and preview ~= '' then
+  if preview and preview ~= "" then
     vim.api.nvim_buf_set_extmark(bufnr, ns, line, 0, {
-      virt_text = { { ' ' .. preview, 'WanderNote' } },
-      virt_text_pos = 'eol',
+      virt_text = { { " " .. preview, "WanderNote" } },
+      virt_text_pos = "eol",
     })
   end
 end
@@ -79,11 +79,11 @@ function M.update_for_session(bufnr, session)
   end
 
   local file_path = vim.api.nvim_buf_get_name(bufnr)
-  if file_path == '' then
+  if file_path == "" then
     return
   end
 
-  local session_module = require('wander.session')
+  local session_module = require("wander.session")
   local notes = session_module.get_notes_for_file(session, file_path)
 
   M.refresh_buffer(bufnr, notes)
@@ -92,10 +92,10 @@ end
 --- Set up autocommands for automatic display updates
 ---@param session SessionData
 function M.setup_autocmds(session)
-  local group = vim.api.nvim_create_augroup('WanderDisplay', { clear = true })
+  local group = vim.api.nvim_create_augroup("WanderDisplay", { clear = true })
 
   -- Update display when entering a buffer
-  vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWinEnter' }, {
+  vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
     group = group,
     callback = function(args)
       M.update_for_session(args.buf, session)
@@ -103,9 +103,9 @@ function M.setup_autocmds(session)
   })
 
   -- Clear display when leaving
-  vim.api.nvim_create_autocmd('BufLeave', {
+  vim.api.nvim_create_autocmd("BufLeave", {
     group = group,
-    callback = function(args)
+    callback = function()
       -- Optionally keep display visible
       -- M.clear_buffer(args.buf)
     end,
@@ -114,7 +114,7 @@ end
 
 --- Clear all autocommands
 function M.clear_autocmds()
-  vim.api.nvim_clear_autocmds({ group = 'WanderDisplay' })
+  vim.api.nvim_clear_autocmds({ group = "WanderDisplay" })
 end
 
 return M

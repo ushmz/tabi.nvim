@@ -7,13 +7,13 @@ end
 vim.g.loaded_wander = 1
 
 -- Load modules
-local wander = require('wander')
-local session_module = require('wander.session')
-local note_module = require('wander.note')
-local float = require('wander.ui.float')
-local display = require('wander.ui.display')
-local retrace = require('wander.retrace')
-local selector = require('wander.ui.selector.native')
+local wander = require("wander")
+local session_module = require("wander.session")
+local note_module = require("wander.note")
+local float = require("wander.ui.float")
+local display = require("wander.ui.display")
+local retrace = require("wander.retrace")
+local selector = require("wander.ui.selector.native")
 
 -- Initialize display
 display.init()
@@ -47,7 +47,7 @@ end
 --- End the current session
 function commands.end_session()
   if not wander.state.current_session then
-    vim.notify('Wander: No active session', vim.log.levels.WARN)
+    vim.notify("Wander: No active session", vim.log.levels.WARN)
     return
   end
 
@@ -71,10 +71,10 @@ end
 function commands.note(args)
   local action = args[2]
 
-  if action == 'edit' then
+  if action == "edit" then
     commands.note_edit()
     return
-  elseif action == 'delete' then
+  elseif action == "delete" then
     commands.note_delete()
     return
   end
@@ -83,8 +83,8 @@ function commands.note(args)
   local bufnr = vim.api.nvim_get_current_buf()
   local file_path = vim.api.nvim_buf_get_name(bufnr)
 
-  if file_path == '' then
-    vim.notify('Wander: Cannot add note to unnamed buffer', vim.log.levels.ERROR)
+  if file_path == "" then
+    vim.notify("Wander: Cannot add note to unnamed buffer", vim.log.levels.ERROR)
     return
   end
 
@@ -106,21 +106,21 @@ function commands.note(args)
   -- Check if note already exists at this line
   local existing_note = session_module.get_note_at_line(session, file_path, line)
 
-  float.open_note_editor(existing_note and existing_note.content or '', function(content)
-    if content == '' then
-      vim.notify('Wander: Empty note not saved', vim.log.levels.WARN)
+  float.open_note_editor(existing_note and existing_note.content or "", function(content)
+    if content == "" then
+      vim.notify("Wander: Empty note not saved", vim.log.levels.WARN)
       return
     end
 
     if existing_note then
       -- Update existing note
       session_module.update_note(session, existing_note.id, content)
-      vim.notify('Wander: Note updated', vim.log.levels.INFO)
+      vim.notify("Wander: Note updated", vim.log.levels.INFO)
     else
       -- Create new note
       local note = note_module.create(file_path, line, content)
       session_module.add_note(session, note)
-      vim.notify('Wander: Note added', vim.log.levels.INFO)
+      vim.notify("Wander: Note added", vim.log.levels.INFO)
     end
 
     -- Refresh display
@@ -145,18 +145,18 @@ function commands.note_edit()
 
   local note = session_module.get_note_at_line(session, file_path, line)
   if not note then
-    vim.notify('Wander: No note at current line', vim.log.levels.WARN)
+    vim.notify("Wander: No note at current line", vim.log.levels.WARN)
     return
   end
 
   float.open_note_editor(note.content, function(content)
-    if content == '' then
-      vim.notify('Wander: Empty note not saved', vim.log.levels.WARN)
+    if content == "" then
+      vim.notify("Wander: Empty note not saved", vim.log.levels.WARN)
       return
     end
 
     session_module.update_note(session, note.id, content)
-    vim.notify('Wander: Note updated', vim.log.levels.INFO)
+    vim.notify("Wander: Note updated", vim.log.levels.INFO)
     display.update_for_session(bufnr, session)
   end)
 end
@@ -172,22 +172,22 @@ function commands.note_delete()
   if wander.state.current_session then
     session = session_module.load(wander.state.current_session)
   else
-    session = session_module.load('default')
+    session = session_module.load("default")
   end
 
   if not session then
-    vim.notify('Wander: No session found', vim.log.levels.WARN)
+    vim.notify("Wander: No session found", vim.log.levels.WARN)
     return
   end
 
   local note = session_module.get_note_at_line(session, file_path, line)
   if not note then
-    vim.notify('Wander: No note at current line', vim.log.levels.WARN)
+    vim.notify("Wander: No note at current line", vim.log.levels.WARN)
     return
   end
 
   session_module.remove_note(session, note.id)
-  vim.notify('Wander: Note deleted', vim.log.levels.INFO)
+  vim.notify("Wander: Note deleted", vim.log.levels.INFO)
   display.update_for_session(bufnr, session)
 end
 
@@ -225,26 +225,26 @@ function commands.sessions()
   local sessions = session_module.list()
 
   if #sessions == 0 then
-    vim.notify('Wander: No sessions found', vim.log.levels.INFO)
+    vim.notify("Wander: No sessions found", vim.log.levels.INFO)
     return
   end
 
-  local lines = { 'Available sessions:' }
+  local lines = { "Available sessions:" }
   for i, session in ipairs(sessions) do
-    local current_marker = (wander.state.current_session == session.id) and '* ' or '  '
+    local current_marker = (wander.state.current_session == session.id) and "* " or "  "
     local line = string.format(
-      '%s%d. %s (%d notes, updated: %s, branch: %s)',
+      "%s%d. %s (%d notes, updated: %s, branch: %s)",
       current_marker,
       i,
       session.name,
       #session.notes,
-      vim.fn.strftime('%Y-%m-%d %H:%M', vim.fn.strptime('%Y-%m-%dT%H:%M:%SZ', session.updated_at)),
-      session.branch or 'N/A'
+      vim.fn.strftime("%Y-%m-%d %H:%M", vim.fn.strptime("%Y-%m-%dT%H:%M:%SZ", session.updated_at)),
+      session.branch or "N/A"
     )
     table.insert(lines, line)
   end
 
-  vim.notify(table.concat(lines, '\n'), vim.log.levels.INFO)
+  vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO)
 end
 
 --- Delete a session
@@ -252,7 +252,7 @@ function commands.session_delete(args)
   local session_name = args[3]
 
   if not session_name then
-    vim.notify('Wander: Usage: :Wander session delete <name>', vim.log.levels.ERROR)
+    vim.notify("Wander: Usage: :Wander session delete <name>", vim.log.levels.ERROR)
     return
   end
 
@@ -275,7 +275,7 @@ function commands.session_delete(args)
   vim.ui.input({
     prompt = 'Delete session "' .. session_name .. '"? (y/N): ',
   }, function(input)
-    if input == 'y' or input == 'Y' then
+    if input == "y" or input == "Y" then
       if session_module.delete(session.id) then
         vim.notify('Wander: Session "' .. session_name .. '" deleted', vim.log.levels.INFO)
 
@@ -285,7 +285,7 @@ function commands.session_delete(args)
         end
       end
     else
-      vim.notify('Wander: Deletion cancelled', vim.log.levels.INFO)
+      vim.notify("Wander: Deletion cancelled", vim.log.levels.INFO)
     end
   end)
 end
@@ -296,7 +296,7 @@ function commands.session_rename(args)
   local new_name = args[4]
 
   if not old_name or not new_name then
-    vim.notify('Wander: Usage: :Wander session rename <old-name> <new-name>', vim.log.levels.ERROR)
+    vim.notify("Wander: Usage: :Wander session rename <old-name> <new-name>", vim.log.levels.ERROR)
     return
   end
 
@@ -321,65 +321,65 @@ function commands.session_rename(args)
 end
 
 -- Create user commands
-vim.api.nvim_create_user_command('Wander', function(opts)
-  local args = vim.split(vim.trim(opts.args), '%s+')
+vim.api.nvim_create_user_command("Wander", function(opts)
+  local args = vim.split(vim.trim(opts.args), "%s+")
   local subcommand = args[1]
 
-  if subcommand == 'start' then
+  if subcommand == "start" then
     commands.start_session(args)
-  elseif subcommand == 'end' then
+  elseif subcommand == "end" then
     commands.end_session()
-  elseif subcommand == 'note' or subcommand == 'memo' then
+  elseif subcommand == "note" or subcommand == "memo" then
     commands.note(args)
-  elseif subcommand == 'retrace' then
-    if args[2] == 'end' then
+  elseif subcommand == "retrace" then
+    if args[2] == "end" then
       retrace.stop()
     else
       commands.retrace(args)
     end
-  elseif subcommand == 'next' then
+  elseif subcommand == "next" then
     retrace.next()
-  elseif subcommand == 'prev' then
+  elseif subcommand == "prev" then
     retrace.prev()
-  elseif subcommand == 'sessions' then
+  elseif subcommand == "sessions" then
     commands.sessions()
-  elseif subcommand == 'session' then
+  elseif subcommand == "session" then
     local action = args[2]
-    if action == 'delete' then
+    if action == "delete" then
       commands.session_delete(args)
-    elseif action == 'rename' then
+    elseif action == "rename" then
       commands.session_rename(args)
     else
-      vim.notify('Wander: Unknown session action: ' .. (action or 'nil'), vim.log.levels.ERROR)
+      vim.notify("Wander: Unknown session action: " .. (action or "nil"), vim.log.levels.ERROR)
     end
   else
-    vim.notify('Wander: Unknown subcommand: ' .. (subcommand or 'nil'), vim.log.levels.ERROR)
+    vim.notify("Wander: Unknown subcommand: " .. (subcommand or "nil"), vim.log.levels.ERROR)
   end
 end, {
-  nargs = '+',
-  desc = 'Wander code reading session manager',
+  nargs = "+",
+  desc = "Wander code reading session manager",
   complete = function(arg_lead, cmdline, _)
     local subcommands = {
-      'start',
-      'end',
-      'note',
-      'memo',
-      'retrace',
-      'next',
-      'prev',
-      'sessions',
-      'session',
+      "start",
+      "end",
+      "note",
+      "memo",
+      "retrace",
+      "next",
+      "prev",
+      "sessions",
+      "session",
     }
 
-    local args = vim.split(cmdline, '%s+')
+    local args = vim.split(cmdline, "%s+")
     if #args == 2 then
       return vim.tbl_filter(function(cmd)
         return vim.startswith(cmd, arg_lead)
       end, subcommands)
-    elseif #args == 3 and (args[2] == 'note' or args[2] == 'memo') then
+    elseif #args == 3 and (args[2] == "note" or args[2] == "memo") then
       return vim.tbl_filter(function(cmd)
         return vim.startswith(cmd, arg_lead)
-      end, { 'edit', 'delete' })
+      end, { "edit", "delete" })
     end
 
     return {}

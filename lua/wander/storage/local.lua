@@ -1,7 +1,7 @@
 ---@class WanderStorageBackend
 local M = {}
 
-local utils = require('wander.utils')
+local utils = require("wander.utils")
 
 --- Get storage directory path
 ---@return string|nil
@@ -10,7 +10,7 @@ function M.get_storage_dir()
   if not git_root then
     return nil
   end
-  return git_root .. '/.git/wander'
+  return git_root .. "/.git/wander"
 end
 
 --- Get sessions directory path
@@ -20,19 +20,19 @@ function M.get_sessions_dir()
   if not storage_dir then
     return nil
   end
-  return storage_dir .. '/sessions'
+  return storage_dir .. "/sessions"
 end
 
 --- Initialize storage
 function M.init()
   if not utils.is_git_repo() then
-    vim.notify('Wander: Not in a git repository', vim.log.levels.WARN)
+    vim.notify("Wander: Not in a git repository", vim.log.levels.WARN)
     return
   end
 
   local sessions_dir = M.get_sessions_dir()
   if not sessions_dir then
-    vim.notify('Wander: Failed to get storage directory', vim.log.levels.ERROR)
+    vim.notify("Wander: Failed to get storage directory", vim.log.levels.ERROR)
     return
   end
 
@@ -45,16 +45,16 @@ end
 function M.save_session(session)
   local sessions_dir = M.get_sessions_dir()
   if not sessions_dir then
-    vim.notify('Wander: Failed to get sessions directory', vim.log.levels.ERROR)
+    vim.notify("Wander: Failed to get sessions directory", vim.log.levels.ERROR)
     return false
   end
 
-  local file_path = sessions_dir .. '/' .. session.id .. '.json'
+  local file_path = sessions_dir .. "/" .. session.id .. ".json"
   local json = vim.json.encode(session)
 
-  local file = io.open(file_path, 'w')
+  local file = io.open(file_path, "w")
   if not file then
-    vim.notify('Wander: Failed to save session: ' .. file_path, vim.log.levels.ERROR)
+    vim.notify("Wander: Failed to save session: " .. file_path, vim.log.levels.ERROR)
     return false
   end
 
@@ -72,18 +72,18 @@ function M.load_session(session_id)
     return nil
   end
 
-  local file_path = sessions_dir .. '/' .. session_id .. '.json'
-  local file = io.open(file_path, 'r')
+  local file_path = sessions_dir .. "/" .. session_id .. ".json"
+  local file = io.open(file_path, "r")
   if not file then
     return nil
   end
 
-  local content = file:read('*a')
+  local content = file:read("*a")
   file:close()
 
   local ok, session = pcall(vim.json.decode, content)
   if not ok then
-    vim.notify('Wander: Failed to parse session file: ' .. file_path, vim.log.levels.ERROR)
+    vim.notify("Wander: Failed to parse session file: " .. file_path, vim.log.levels.ERROR)
     return nil
   end
 
@@ -110,8 +110,8 @@ function M.list_sessions()
       break
     end
 
-    if type == 'file' and name:match('%.json$') then
-      local session_id = name:gsub('%.json$', '')
+    if type == "file" and name:match("%.json$") then
+      local session_id = name:gsub("%.json$", "")
       local session = M.load_session(session_id)
       if session then
         table.insert(sessions, session)
@@ -136,10 +136,10 @@ function M.delete_session(session_id)
     return false
   end
 
-  local file_path = sessions_dir .. '/' .. session_id .. '.json'
+  local file_path = sessions_dir .. "/" .. session_id .. ".json"
   local ok, err = os.remove(file_path)
   if not ok then
-    vim.notify('Wander: Failed to delete session: ' .. (err or 'unknown error'), vim.log.levels.ERROR)
+    vim.notify("Wander: Failed to delete session: " .. (err or "unknown error"), vim.log.levels.ERROR)
     return false
   end
 
@@ -155,7 +155,7 @@ function M.session_exists(session_id)
     return false
   end
 
-  local file_path = sessions_dir .. '/' .. session_id .. '.json'
+  local file_path = sessions_dir .. "/" .. session_id .. ".json"
   local stat = vim.loop.fs_stat(file_path)
   return stat ~= nil
 end

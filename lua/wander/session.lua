@@ -1,8 +1,8 @@
 ---@class WanderSession
 local M = {}
 
-local utils = require('wander.utils')
-local storage = require('wander.storage')
+local utils = require("wander.utils")
+local storage = require("wander.storage")
 
 ---@class SessionData
 ---@field id string
@@ -13,20 +13,20 @@ local storage = require('wander.storage')
 ---@field tag string|nil
 ---@field notes NoteData[]
 
-local DEFAULT_SESSION_ID = 'default'
+local DEFAULT_SESSION_ID = "default"
 
 --- Create a new session
 ---@param name string|nil Session name
 ---@return SessionData|nil
 function M.create(name)
-  local session_name = name or 'default'
+  local session_name = name or "default"
   local session_id = name and utils.uuid() or DEFAULT_SESSION_ID
 
   -- Check if session already exists (for named sessions)
   if name then
     local backend = storage.get_backend()
     if backend and backend.session_exists(session_id) then
-      vim.notify('Wander: Session with this name already exists', vim.log.levels.WARN)
+      vim.notify("Wander: Session with this name already exists", vim.log.levels.WARN)
       return nil
     end
   end
@@ -83,15 +83,16 @@ function M.get_or_create_default()
     return session
   end
 
-  return M.create(nil) or {
-    id = DEFAULT_SESSION_ID,
-    name = 'default',
-    created_at = utils.timestamp(),
-    updated_at = utils.timestamp(),
-    branch = utils.get_git_branch(),
-    tag = nil,
-    notes = {},
-  }
+  return M.create(nil)
+    or {
+      id = DEFAULT_SESSION_ID,
+      name = "default",
+      created_at = utils.timestamp(),
+      updated_at = utils.timestamp(),
+      branch = utils.get_git_branch(),
+      tag = nil,
+      notes = {},
+    }
 end
 
 --- List all sessions
@@ -110,7 +111,7 @@ end
 ---@return boolean success
 function M.delete(session_id)
   if session_id == DEFAULT_SESSION_ID then
-    vim.notify('Wander: Cannot delete default session', vim.log.levels.WARN)
+    vim.notify("Wander: Cannot delete default session", vim.log.levels.WARN)
     return false
   end
 
@@ -129,7 +130,7 @@ end
 function M.rename(session_id, new_name)
   local session = M.load(session_id)
   if not session then
-    vim.notify('Wander: Session not found', vim.log.levels.ERROR)
+    vim.notify("Wander: Session not found", vim.log.levels.ERROR)
     return false
   end
 

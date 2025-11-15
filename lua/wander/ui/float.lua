@@ -1,7 +1,7 @@
 ---@class WanderFloat
 local M = {}
 
-local config = require('wander.config')
+local config = require("wander.config")
 
 --- Create a centered floating window
 ---@param opts table|nil Options for the floating window
@@ -29,12 +29,12 @@ function M.create_float(opts)
 
   -- Window options
   local win_opts = {
-    relative = 'editor',
+    relative = "editor",
     width = width,
     height = height,
     row = row,
     col = col,
-    style = 'minimal',
+    style = "minimal",
     border = border,
   }
 
@@ -42,9 +42,9 @@ function M.create_float(opts)
   local winid = vim.api.nvim_open_win(bufnr, true, win_opts)
 
   -- Set buffer options
-  vim.api.nvim_buf_set_option(bufnr, 'buftype', 'nofile')
-  vim.api.nvim_buf_set_option(bufnr, 'bufhidden', 'wipe')
-  vim.api.nvim_buf_set_option(bufnr, 'filetype', 'markdown')
+  vim.api.nvim_buf_set_option(bufnr, "buftype", "acwrite")
+  vim.api.nvim_buf_set_option(bufnr, "bufhidden", "wipe")
+  vim.api.nvim_buf_set_option(bufnr, "filetype", "markdown")
 
   return bufnr, winid
 end
@@ -57,20 +57,20 @@ function M.open_note_editor(initial_content, on_save, on_cancel)
   local bufnr, winid = M.create_float()
 
   -- Set initial content
-  if initial_content and initial_content ~= '' then
-    local lines = vim.split(initial_content, '\n')
+  if initial_content and initial_content ~= "" then
+    local lines = vim.split(initial_content, "\n")
     vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
   end
 
   -- Add title as comment
   vim.api.nvim_buf_set_lines(bufnr, 0, 0, false, {
-    '<!-- Write your note here (markdown format) -->',
-    '<!-- Save: <C-s> or :w | Cancel: <Esc> or :q -->',
-    '',
+    "<!-- Write your note here (markdown format) -->",
+    "<!-- Save: <C-s> or :w | Cancel: <Esc> or :q -->",
+    "",
   })
 
   -- Start insert mode at the end
-  vim.cmd('startinsert')
+  vim.cmd("startinsert")
 
   -- Move cursor to after the comments
   vim.api.nvim_win_set_cursor(winid, { 4, 0 })
@@ -82,12 +82,12 @@ function M.open_note_editor(initial_content, on_save, on_cancel)
     -- Remove comment lines
     local content_lines = {}
     for _, line in ipairs(lines) do
-      if not line:match('^<!%-%-') then
+      if not line:match("^<!%-%-") then
         table.insert(content_lines, line)
       end
     end
 
-    local content = table.concat(content_lines, '\n')
+    local content = table.concat(content_lines, "\n")
     content = vim.trim(content)
 
     vim.api.nvim_win_close(winid, true)
@@ -111,13 +111,13 @@ function M.open_note_editor(initial_content, on_save, on_cancel)
   -- Set up keymaps
   local keymap_opts = { noremap = true, silent = true, buffer = bufnr }
 
-  vim.keymap.set('n', '<Esc>', cancel, keymap_opts)
-  vim.keymap.set('n', 'q', cancel, keymap_opts)
-  vim.keymap.set('n', '<C-s>', save, keymap_opts)
-  vim.keymap.set('i', '<C-s>', save, keymap_opts)
+  vim.keymap.set("n", "<Esc>", cancel, keymap_opts)
+  vim.keymap.set("n", "q", cancel, keymap_opts)
+  vim.keymap.set("n", "<C-s>", save, keymap_opts)
+  vim.keymap.set("i", "<C-s>", save, keymap_opts)
 
   -- Set up autocmd to save on :w
-  vim.api.nvim_create_autocmd('BufWriteCmd', {
+  vim.api.nvim_create_autocmd("BufWriteCmd", {
     buffer = bufnr,
     callback = function()
       save()
@@ -125,7 +125,7 @@ function M.open_note_editor(initial_content, on_save, on_cancel)
   })
 
   -- Set up autocmd to cancel on window close
-  vim.api.nvim_create_autocmd('WinClosed', {
+  vim.api.nvim_create_autocmd("WinClosed", {
     buffer = bufnr,
     once = true,
     callback = function()

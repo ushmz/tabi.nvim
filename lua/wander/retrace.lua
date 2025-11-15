@@ -13,7 +13,7 @@ local state = nil
 ---@param session SessionData
 function M.start(session)
   if #session.notes == 0 then
-    vim.notify('Wander: Session has no notes to retrace', vim.log.levels.WARN)
+    vim.notify("Wander: Session has no notes to retrace", vim.log.levels.WARN)
     return false
   end
 
@@ -27,7 +27,7 @@ function M.start(session)
       filename = note.file,
       lnum = note.line,
       col = 1,
-      text = note.content:gsub('\n', ' '), -- Single line for location list
+      text = note.content:gsub("\n", " "), -- Single line for location list
     })
   end
 
@@ -42,7 +42,7 @@ function M.start(session)
   }
 
   -- Open location list window
-  vim.cmd('silent! lopen')
+  vim.cmd("silent! lopen")
 
   -- Store the location list window ID
   state.loclist_bufwin = vim.api.nvim_get_current_win()
@@ -50,17 +50,14 @@ function M.start(session)
   -- Jump to first note (this will focus the location list)
   M.show_current(true) -- silent=true to avoid double notification
 
-  vim.notify(
-    string.format('Wander: Retrace mode started - Note 1/%d', #session.notes),
-    vim.log.levels.INFO
-  )
+  vim.notify(string.format("Wander: Retrace mode started - Note 1/%d", #session.notes), vim.log.levels.INFO)
   return true
 end
 
 --- End retrace mode
 function M.stop()
   if not state then
-    vim.notify('Wander: Not in retrace mode', vim.log.levels.WARN)
+    vim.notify("Wander: Not in retrace mode", vim.log.levels.WARN)
     return
   end
 
@@ -70,14 +67,14 @@ function M.stop()
   end
 
   state = nil
-  vim.notify('Wander: Retrace mode ended', vim.log.levels.INFO)
+  vim.notify("Wander: Retrace mode ended", vim.log.levels.INFO)
 end
 
 --- Show current note
 ---@param silent boolean|nil If true, suppress notification
 function M.show_current(silent)
   if not state then
-    vim.notify('Wander: Not in retrace mode', vim.log.levels.WARN)
+    vim.notify("Wander: Not in retrace mode", vim.log.levels.WARN)
     return
   end
 
@@ -94,27 +91,24 @@ function M.show_current(silent)
     vim.api.nvim_win_set_cursor(state.loclist_bufwin, { state.current_index, 0 })
 
     -- Center the line
-    vim.cmd('normal! zz')
+    vim.cmd("normal! zz")
   end
 
   -- Show progress (unless silent)
   if not silent then
-    vim.notify(
-      string.format('Wander: Note %d/%d', state.current_index, #state.session.notes),
-      vim.log.levels.INFO
-    )
+    vim.notify(string.format("Wander: Note %d/%d", state.current_index, #state.session.notes), vim.log.levels.INFO)
   end
 end
 
 --- Go to next note
 function M.next()
   if not state then
-    vim.notify('Wander: Not in retrace mode', vim.log.levels.WARN)
+    vim.notify("Wander: Not in retrace mode", vim.log.levels.WARN)
     return
   end
 
   if state.current_index >= #state.session.notes then
-    vim.notify('Wander: Already at last note', vim.log.levels.WARN)
+    vim.notify("Wander: Already at last note", vim.log.levels.WARN)
     return
   end
 
@@ -125,12 +119,12 @@ end
 --- Go to previous note
 function M.prev()
   if not state then
-    vim.notify('Wander: Not in retrace mode', vim.log.levels.WARN)
+    vim.notify("Wander: Not in retrace mode", vim.log.levels.WARN)
     return
   end
 
   if state.current_index <= 1 then
-    vim.notify('Wander: Already at first note', vim.log.levels.WARN)
+    vim.notify("Wander: Already at first note", vim.log.levels.WARN)
     return
   end
 
