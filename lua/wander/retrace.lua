@@ -7,6 +7,7 @@ local float = require('wander.ui.float')
 ---@field session SessionData
 ---@field current_index number
 ---@field win_id number|nil Floating window showing note content
+---@field loclist_win number Window ID that owns the location list
 
 local state = nil
 
@@ -18,10 +19,28 @@ function M.start(session)
     return false
   end
 
+  -- Get current window ID for location list
+  local winid = vim.api.nvim_get_current_win()
+
+  -- Create location list items from notes
+  local loclist_items = {}
+  for _, note in ipairs(session.notes) do
+    table.insert(loclist_items, {
+      filename = note.file,
+      lnum = note.line,
+      col = 1,
+      text = note.content:gsub('\n', ' '), -- Single line for location list
+    })
+  end
+
+  -- Set location list for current window
+  vim.fn.setloclist(winid, loclist_items)
+
   state = {
     session = session,
     current_index = 1,
     win_id = nil,
+    loclist_win = winid,
   }
 
   -- Jump to first note
@@ -43,6 +62,11 @@ function M.stop()
     vim.api.nvim_win_close(state.win_id, true)
   end
 
+  -- Clear location list if the window is still valid
+  if state.loclist_win and vim.api.nvim_win_is_valid(state.loclist_win) then
+    vim.fn.setloclist(state.loclist_win, {})
+  end
+
   state = nil
   vim.notify('Wander: Retrace mode ended', vim.log.levels.INFO)
 end
@@ -59,9 +83,9 @@ function M.show_current()
     return
   end
 
-  -- Open file and jump to line
-  vim.cmd('edit ' .. vim.fn.fnameescape(note.file))
-  vim.api.nvim_win_set_cursor(0, { note.line, 0 })
+  -- Jump to location list item
+  -- Use silent! to suppress error messages if location list is somehow invalid
+  vim.cmd('silent! ll ' .. state.current_index)
 
   -- Center the line
   vim.cmd('normal! zz')
