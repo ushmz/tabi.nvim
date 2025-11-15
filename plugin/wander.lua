@@ -12,6 +12,7 @@ local session_module = require('wander.session')
 local note_module = require('wander.note')
 local float = require('wander.ui.float')
 local display = require('wander.ui.display')
+local retrace = require('wander.retrace')
 
 -- Initialize display
 display.init()
@@ -189,6 +190,42 @@ function commands.note_delete()
   display.update_for_session(bufnr, session)
 end
 
+--- Start retrace mode
+function commands.retrace(args)
+  local session_name = args[2]
+
+  local session
+  if session_name then
+    -- Try to find session by name
+    local sessions = session_module.list()
+    for _, s in ipairs(sessions) do
+      if s.name == session_name then
+        session = s
+        break
+      end
+    end
+
+    if not session then
+      vim.notify('Wander: Session "' .. session_name .. '" not found', vim.log.levels.ERROR)
+      return
+    end
+  else
+    -- Use current session or default
+    if wander.state.current_session then
+      session = session_module.load(wander.state.current_session)
+    else
+      session = session_module.load('default')
+    end
+
+    if not session then
+      vim.notify('Wander: No session found. Use :Wander retrace <session-name>', vim.log.levels.WARN)
+      return
+    end
+  end
+
+  retrace.start(session)
+end
+
 -- Create user commands
 vim.api.nvim_create_user_command('Wander', function(opts)
   local args = vim.split(vim.trim(opts.args), '%s+')
@@ -201,14 +238,15 @@ vim.api.nvim_create_user_command('Wander', function(opts)
   elseif subcommand == 'note' or subcommand == 'memo' then
     commands.note(args)
   elseif subcommand == 'retrace' then
-    -- To be implemented in Task 9
-    vim.notify('Wander: retrace command not yet implemented', vim.log.levels.WARN)
+    if args[2] == 'end' then
+      retrace.stop()
+    else
+      commands.retrace(args)
+    end
   elseif subcommand == 'next' then
-    -- To be implemented in Task 9
-    vim.notify('Wander: next command not yet implemented', vim.log.levels.WARN)
+    retrace.next()
   elseif subcommand == 'prev' then
-    -- To be implemented in Task 9
-    vim.notify('Wander: prev command not yet implemented', vim.log.levels.WARN)
+    retrace.prev()
   elseif subcommand == 'sessions' then
     -- To be implemented in Task 11
     vim.notify('Wander: sessions command not yet implemented', vim.log.levels.WARN)
