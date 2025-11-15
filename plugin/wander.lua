@@ -13,6 +13,7 @@ local note_module = require('wander.note')
 local float = require('wander.ui.float')
 local display = require('wander.ui.display')
 local retrace = require('wander.retrace')
+local selector = require('wander.ui.selector.native')
 
 -- Initialize display
 display.init()
@@ -194,10 +195,10 @@ end
 function commands.retrace(args)
   local session_name = args[2]
 
-  local session
   if session_name then
     -- Try to find session by name
     local sessions = session_module.list()
+    local session = nil
     for _, s in ipairs(sessions) do
       if s.name == session_name then
         session = s
@@ -209,21 +210,14 @@ function commands.retrace(args)
       vim.notify('Wander: Session "' .. session_name .. '" not found', vim.log.levels.ERROR)
       return
     end
+
+    retrace.start(session)
   else
-    -- Use current session or default
-    if wander.state.current_session then
-      session = session_module.load(wander.state.current_session)
-    else
-      session = session_module.load('default')
-    end
-
-    if not session then
-      vim.notify('Wander: No session found. Use :Wander retrace <session-name>', vim.log.levels.WARN)
-      return
-    end
+    -- Show session selector
+    selector.select_session(function(session)
+      retrace.start(session)
+    end)
   end
-
-  retrace.start(session)
 end
 
 -- Create user commands
