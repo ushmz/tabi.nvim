@@ -41,7 +41,10 @@ function M.select_session(on_select, opts)
       return
     end
 
-    on_select(sessions[idx])
+    -- Defer execution to allow UI to clean up
+    vim.schedule(function()
+      on_select(sessions[idx])
+    end)
   end)
 end
 
