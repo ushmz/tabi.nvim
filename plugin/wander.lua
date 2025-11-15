@@ -220,6 +220,106 @@ function commands.retrace(args)
   end
 end
 
+--- List all sessions
+function commands.sessions()
+  local sessions = session_module.list()
+
+  if #sessions == 0 then
+    vim.notify('Wander: No sessions found', vim.log.levels.INFO)
+    return
+  end
+
+  local lines = { 'Available sessions:' }
+  for i, session in ipairs(sessions) do
+    local current_marker = (wander.state.current_session == session.id) and '* ' or '  '
+    local line = string.format(
+      '%s%d. %s (%d notes, updated: %s, branch: %s)',
+      current_marker,
+      i,
+      session.name,
+      #session.notes,
+      vim.fn.strftime('%Y-%m-%d %H:%M', vim.fn.strptime('%Y-%m-%dT%H:%M:%SZ', session.updated_at)),
+      session.branch or 'N/A'
+    )
+    table.insert(lines, line)
+  end
+
+  vim.notify(table.concat(lines, '\n'), vim.log.levels.INFO)
+end
+
+--- Delete a session
+function commands.session_delete(args)
+  local session_name = args[3]
+
+  if not session_name then
+    vim.notify('Wander: Usage: :Wander session delete <name>', vim.log.levels.ERROR)
+    return
+  end
+
+  -- Find session
+  local sessions = session_module.list()
+  local session = nil
+  for _, s in ipairs(sessions) do
+    if s.name == session_name then
+      session = s
+      break
+    end
+  end
+
+  if not session then
+    vim.notify('Wander: Session "' .. session_name .. '" not found', vim.log.levels.ERROR)
+    return
+  end
+
+  -- Confirm deletion
+  vim.ui.input({
+    prompt = 'Delete session "' .. session_name .. '"? (y/N): ',
+  }, function(input)
+    if input == 'y' or input == 'Y' then
+      if session_module.delete(session.id) then
+        vim.notify('Wander: Session "' .. session_name .. '" deleted', vim.log.levels.INFO)
+
+        -- Clear current session if it was deleted
+        if wander.state.current_session == session.id then
+          wander.state.current_session = nil
+        end
+      end
+    else
+      vim.notify('Wander: Deletion cancelled', vim.log.levels.INFO)
+    end
+  end)
+end
+
+--- Rename a session
+function commands.session_rename(args)
+  local old_name = args[3]
+  local new_name = args[4]
+
+  if not old_name or not new_name then
+    vim.notify('Wander: Usage: :Wander session rename <old-name> <new-name>', vim.log.levels.ERROR)
+    return
+  end
+
+  -- Find session
+  local sessions = session_module.list()
+  local session = nil
+  for _, s in ipairs(sessions) do
+    if s.name == old_name then
+      session = s
+      break
+    end
+  end
+
+  if not session then
+    vim.notify('Wander: Session "' .. old_name .. '" not found', vim.log.levels.ERROR)
+    return
+  end
+
+  if session_module.rename(session.id, new_name) then
+    vim.notify('Wander: Session renamed from "' .. old_name .. '" to "' .. new_name .. '"', vim.log.levels.INFO)
+  end
+end
+
 -- Create user commands
 vim.api.nvim_create_user_command('Wander', function(opts)
   local args = vim.split(vim.trim(opts.args), '%s+')
@@ -242,11 +342,16 @@ vim.api.nvim_create_user_command('Wander', function(opts)
   elseif subcommand == 'prev' then
     retrace.prev()
   elseif subcommand == 'sessions' then
-    -- To be implemented in Task 11
-    vim.notify('Wander: sessions command not yet implemented', vim.log.levels.WARN)
+    commands.sessions()
   elseif subcommand == 'session' then
-    -- To be implemented in Task 11
-    vim.notify('Wander: session command not yet implemented', vim.log.levels.WARN)
+    local action = args[2]
+    if action == 'delete' then
+      commands.session_delete(args)
+    elseif action == 'rename' then
+      commands.session_rename(args)
+    else
+      vim.notify('Wander: Unknown session action: ' .. (action or 'nil'), vim.log.levels.ERROR)
+    end
   else
     vim.notify('Wander: Unknown subcommand: ' .. (subcommand or 'nil'), vim.log.levels.ERROR)
   end
