@@ -22,7 +22,7 @@ display.init()
 local commands = {}
 
 --- Start a new session
-function commands.start(args)
+function commands.start_session(args)
   local session_name = args[2]
 
   if wander.state.current_session then
@@ -45,7 +45,7 @@ function commands.start(args)
 end
 
 --- End the current session
-function commands['end']()
+function commands.end_session()
   if not wander.state.current_session then
     vim.notify('Wander: No active session', vim.log.levels.WARN)
     return
@@ -326,9 +326,9 @@ vim.api.nvim_create_user_command('Wander', function(opts)
   local subcommand = args[1]
 
   if subcommand == 'start' then
-    commands.start(args)
+    commands.start_session(args)
   elseif subcommand == 'end' then
-    commands['end']()
+    commands.end_session()
   elseif subcommand == 'note' or subcommand == 'memo' then
     commands.note(args)
   elseif subcommand == 'retrace' then
