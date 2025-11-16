@@ -95,7 +95,13 @@ function commands.note(args)
 
   -- Get or create session
   local session
-  if tabi.state.current_session then
+  -- If in retrace mode, use the retrace session
+  if retrace.is_active() then
+    local retrace_state = retrace.get_state()
+    if retrace_state then
+      session = retrace_state.session
+    end
+  elseif tabi.state.current_session then
     session = session_module.load(tabi.state.current_session)
   end
 
@@ -126,7 +132,12 @@ function commands.note(args)
     end
 
     -- Refresh display
-    display.update_for_session(bufnr, session)
+    if retrace.is_active() then
+      -- In retrace mode, refresh virtual line display
+      display.display_all_session_notes(session)
+    else
+      display.update_for_session(bufnr, session)
+    end
   end)
 end
 
@@ -138,7 +149,13 @@ function commands.note_edit()
   local line = cursor[1]
 
   local session
-  if tabi.state.current_session then
+  -- If in retrace mode, use the retrace session
+  if retrace.is_active() then
+    local retrace_state = retrace.get_state()
+    if retrace_state then
+      session = retrace_state.session
+    end
+  elseif tabi.state.current_session then
     session = session_module.load(tabi.state.current_session)
   else
     session = session_module.get_or_create_default()
@@ -159,7 +176,11 @@ function commands.note_edit()
 
     session_module.update_note(session, note.id, content)
     vim.notify("Tabi: Note updated", vim.log.levels.INFO)
-    display.update_for_session(bufnr, session)
+    if retrace.is_active() then
+      display.display_all_session_notes(session)
+    else
+      display.update_for_session(bufnr, session)
+    end
   end)
 end
 
@@ -171,7 +192,13 @@ function commands.note_delete()
   local line = cursor[1]
 
   local session
-  if tabi.state.current_session then
+  -- If in retrace mode, use the retrace session
+  if retrace.is_active() then
+    local retrace_state = retrace.get_state()
+    if retrace_state then
+      session = retrace_state.session
+    end
+  elseif tabi.state.current_session then
     session = session_module.load(tabi.state.current_session)
   else
     session = session_module.load("default")
@@ -190,7 +217,11 @@ function commands.note_delete()
 
   session_module.remove_note(session, note.id)
   vim.notify("Tabi: Note deleted", vim.log.levels.INFO)
-  display.update_for_session(bufnr, session)
+  if retrace.is_active() then
+    display.display_all_session_notes(session)
+  else
+    display.update_for_session(bufnr, session)
+  end
 end
 
 --- Start retrace mode
