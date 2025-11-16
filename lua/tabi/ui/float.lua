@@ -77,6 +77,10 @@ function M.open_note_editor(initial_content, on_save, on_cancel)
 
   -- Save function
   local function save()
+    if vim.fn.mode() == "i" then
+      vim.cmd("stopinsert")
+    end
+
     local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
 
     -- Remove comment lines
