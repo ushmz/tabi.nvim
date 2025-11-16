@@ -1,8 +1,8 @@
----@class WanderSession
+---@class TabiSession
 local M = {}
 
-local utils = require("wander.utils")
-local storage = require("wander.storage")
+local utils = require("tabi.utils")
+local storage = require("tabi.storage")
 
 ---@class SessionData
 ---@field id string
@@ -32,7 +32,7 @@ function M.create(name)
   local existing_sessions = M.list()
   for _, existing in ipairs(existing_sessions) do
     if existing.name == session_name then
-      vim.notify("Wander: Session with name '" .. session_name .. "' already exists", vim.log.levels.WARN)
+      vim.notify("Tabi: Session with name '" .. session_name .. "' already exists", vim.log.levels.WARN)
       return nil
     end
   end
@@ -120,7 +120,7 @@ end
 ---@return boolean success
 function M.delete(session_id)
   if session_id == DEFAULT_SESSION_ID then
-    vim.notify("Wander: Cannot delete default session", vim.log.levels.WARN)
+    vim.notify("Tabi: Cannot delete default session", vim.log.levels.WARN)
     return false
   end
 
@@ -139,7 +139,7 @@ end
 function M.rename(session_id, new_name)
   local session = M.load(session_id)
   if not session then
-    vim.notify("Wander: Session not found", vim.log.levels.ERROR)
+    vim.notify("Tabi: Session not found", vim.log.levels.ERROR)
     return false
   end
 

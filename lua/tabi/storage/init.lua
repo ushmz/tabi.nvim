@@ -1,18 +1,18 @@
----@class WanderStorage
+---@class TabiStorage
 local M = {}
 
-local config = require("wander.config")
+local config = require("tabi.config")
 
----@type WanderStorageBackend|nil
+---@type TabiStorageBackend|nil
 M.backend = nil
 
 --- Initialize storage backend
 function M.init()
   local opts = config.get()
   if opts.storage.backend == "local" then
-    M.backend = require("wander.storage.local")
+    M.backend = require("tabi.storage.local")
   else
-    M.backend = require("wander.storage.global")
+    M.backend = require("tabi.storage.global")
   end
 
   if M.backend and M.backend.init then
@@ -21,7 +21,7 @@ function M.init()
 end
 
 --- Get storage backend
----@return WanderStorageBackend
+---@return TabiStorageBackend
 function M.get_backend()
   return M.backend
 end

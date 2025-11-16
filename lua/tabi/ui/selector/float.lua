@@ -1,7 +1,7 @@
----@class WanderSelector
+---@class TabiSelector
 local M = {}
 
--- Telescope session selector
+-- Custom floating window session selector
 -- Implementation will be added in Task 10
 
 return M

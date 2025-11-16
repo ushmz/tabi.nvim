@@ -1,4 +1,4 @@
-# wander.nvim
+# tabi.nvim
 
 A Neovim plugin for managing code reading sessions with notes and replay functionality.
 
@@ -8,7 +8,7 @@ A Neovim plugin for managing code reading sessions with notes and replay functio
 - **Markdown Notes**: Take notes while reading code with a floating window editor
 - **Visual Indicators**: See your notes inline with virtual text and signs
 - **Session Replay**: Retrace your steps through code with the retrace mode
-- **Persistent Storage**: Notes are saved locally (`.git/wander/`) or globally
+- **Persistent Storage**: Notes are saved locally (`.git/tabi/`) or globally
 - **Branch Awareness**: Sessions are automatically associated with git branches
 
 ## Installation
@@ -17,9 +17,9 @@ A Neovim plugin for managing code reading sessions with notes and replay functio
 
 ```lua
 {
-  'ushmz/wander.nvim',
+  'ushmz/tabi.nvim',
   config = function()
-    require('wander').setup()
+    require('tabi').setup()
   end,
 }
 ```
@@ -28,9 +28,9 @@ A Neovim plugin for managing code reading sessions with notes and replay functio
 
 ```lua
 use {
-  'ushmz/wander.nvim',
+  'ushmz/tabi.nvim',
   config = function()
-    require('wander').setup()
+    require('tabi').setup()
   end,
 }
 ```
@@ -38,9 +38,9 @@ use {
 ## Configuration
 
 ```lua
-require('wander').setup({
+require('tabi').setup({
   storage = {
-    backend = 'local', -- 'local' (.git/wander/) or 'global' (XDG_DATA_HOME/wander/)
+    backend = 'local', -- 'local' (.git/tabi/) or 'global' (XDG_DATA_HOME/tabi/)
   },
   ui = {
     selector = 'native', -- 'native', 'telescope', or 'float'
@@ -61,12 +61,12 @@ require('wander').setup({
 
 1. **Start a session**
    ```vim
-   :Wander start my-reading-session
+   :Tabi start my-reading-session
    ```
 
 2. **Take notes while reading code**
    - Navigate to a line you want to annotate
-   - Run `:Wander note` to open the note editor
+   - Run `:Tabi note` to open the note editor
    - Write your notes in Markdown
    - Save with `<C-s>` or `:w`
 
@@ -77,15 +77,15 @@ require('wander').setup({
 
 4. **End your session**
    ```vim
-   :Wander end
+   :Tabi end
    ```
 
 5. **Replay your session later**
    ```vim
-   :Wander retrace my-reading-session
+   :Tabi retrace my-reading-session
    ```
-   - Navigate through notes with `:Wander next` and `:Wander prev`
-   - Exit retrace mode with `:Wander retrace end`
+   - Navigate through notes with `:Tabi next` and `:Tabi prev`
+   - Exit retrace mode with `:Tabi retrace end`
 
 ### Commands
 
@@ -93,28 +93,28 @@ require('wander').setup({
 
 | Command | Description |
 |---------|-------------|
-| `:Wander start [name]` | Start a new session (optional name) |
-| `:Wander end` | End the current session |
-| `:Wander sessions` | List all sessions |
-| `:Wander session delete <name>` | Delete a session |
-| `:Wander session rename <old> <new>` | Rename a session |
+| `:Tabi start [name]` | Start a new session (optional name) |
+| `:Tabi end` | End the current session |
+| `:Tabi sessions` | List all sessions |
+| `:Tabi session delete <name>` | Delete a session |
+| `:Tabi session rename <old> <new>` | Rename a session |
 
 #### Note Management
 
 | Command | Description |
 |---------|-------------|
-| `:Wander note` | Create/edit note at current line |
-| `:Wander note edit` | Edit existing note at current line |
-| `:Wander note delete` | Delete note at current line |
+| `:Tabi note` | Create/edit note at current line |
+| `:Tabi note edit` | Edit existing note at current line |
+| `:Tabi note delete` | Delete note at current line |
 
 #### Retrace Mode
 
 | Command | Description |
 |---------|-------------|
-| `:Wander retrace [name]` | Start replaying a session |
-| `:Wander next` | Go to next note in replay |
-| `:Wander prev` | Go to previous note in replay |
-| `:Wander retrace end` | Exit retrace mode |
+| `:Tabi retrace [name]` | Start replaying a session |
+| `:Tabi next` | Go to next note in replay |
+| `:Tabi prev` | Go to previous note in replay |
+| `:Tabi retrace end` | Exit retrace mode |
 
 ### Anonymous Sessions
 
@@ -124,10 +124,10 @@ If you don't start a named session, notes are automatically saved to a `default`
 
 ### Local Storage (Default)
 
-Notes are stored in `.git/wander/sessions/` within your project. This keeps notes project-specific and allows sharing with your team by committing the `.git/wander` directory.
+Notes are stored in `.git/tabi/sessions/` within your project. This keeps notes project-specific and allows sharing with your team by committing the `.git/tabi` directory.
 
 ```
-.git/wander/
+.git/tabi/
 └── sessions/
     ├── default.json
     └── my-reading-session.json
@@ -136,7 +136,7 @@ Notes are stored in `.git/wander/sessions/` within your project. This keeps note
 ### Global Storage
 
 Set `storage.backend = 'global'` to store all notes in:
-- `${XDG_DATA_HOME}/wander/sessions/` (usually `~/.local/share/wander/sessions/`)
+- `${XDG_DATA_HOME}/tabi/sessions/` (usually `~/.local/share/tabi/sessions/`)
 
 This is useful for personal notes across multiple projects.
 
@@ -155,8 +155,8 @@ This is useful for personal notes across multiple projects.
 
 ```bash
 # Clone the repository
-git clone https://github.com/ushmz/wander.nvim.git
-cd wander.nvim
+git clone https://github.com/ushmz/tabi.nvim.git
+cd tabi.nvim
 
 # Run tests (if available)
 # TBD

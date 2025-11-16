@@ -1,7 +1,7 @@
----@class WanderFloat
+---@class TabiFloat
 local M = {}
 
-local config = require("wander.config")
+local config = require("tabi.config")
 
 --- Create a centered floating window
 ---@param opts table|nil Options for the floating window

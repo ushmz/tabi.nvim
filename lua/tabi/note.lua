@@ -1,7 +1,7 @@
----@class WanderNote
+---@class TabiNote
 local M = {}
 
-local utils = require("wander.utils")
+local utils = require("tabi.utils")
 
 ---@class NoteData
 ---@field id string

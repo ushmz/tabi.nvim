@@ -1,7 +1,7 @@
----@class Wander
+---@class Tabi
 local M = {}
 
----@class WanderState
+---@class TabiState
 ---@field current_session string|nil
 ---@field retrace_mode boolean
 ---@field retrace_index number|nil
@@ -14,11 +14,11 @@ M.state = {
 --- Setup function to initialize the plugin
 ---@param opts table|nil User configuration options
 function M.setup(opts)
-  local config = require("wander.config")
+  local config = require("tabi.config")
   config.setup(opts or {})
 
   -- Initialize storage
-  local storage = require("wander.storage")
+  local storage = require("tabi.storage")
   storage.init()
 
   -- Setup autocommands and highlights
@@ -27,9 +27,9 @@ end
 
 --- Setup highlight groups
 function M._setup_highlights()
-  vim.api.nvim_set_hl(0, "WanderNote", { link = "Comment", default = true })
-  vim.api.nvim_set_hl(0, "WanderNoteSign", { link = "DiagnosticInfo", default = true })
-  vim.api.nvim_set_hl(0, "WanderLineNr", { link = "DiagnosticInfo", default = true })
+  vim.api.nvim_set_hl(0, "TabiNote", { link = "Comment", default = true })
+  vim.api.nvim_set_hl(0, "TabiNoteSign", { link = "DiagnosticInfo", default = true })
+  vim.api.nvim_set_hl(0, "TabiLineNr", { link = "DiagnosticInfo", default = true })
 end
 
 return M

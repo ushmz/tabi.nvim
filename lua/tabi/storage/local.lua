@@ -1,7 +1,7 @@
----@class WanderStorageBackend
+---@class TabiStorageBackend
 local M = {}
 
-local utils = require("wander.utils")
+local utils = require("tabi.utils")
 
 --- Get storage directory path
 ---@return string|nil
@@ -10,7 +10,7 @@ function M.get_storage_dir()
   if not git_root then
     return nil
   end
-  return git_root .. "/.git/wander"
+  return git_root .. "/.git/tabi"
 end
 
 --- Get sessions directory path
@@ -26,13 +26,13 @@ end
 --- Initialize storage
 function M.init()
   if not utils.is_git_repo() then
-    vim.notify("Wander: Not in a git repository", vim.log.levels.WARN)
+    vim.notify("Tabi: Not in a git repository", vim.log.levels.WARN)
     return
   end
 
   local sessions_dir = M.get_sessions_dir()
   if not sessions_dir then
-    vim.notify("Wander: Failed to get storage directory", vim.log.levels.ERROR)
+    vim.notify("Tabi: Failed to get storage directory", vim.log.levels.ERROR)
     return
   end
 
@@ -45,7 +45,7 @@ end
 function M.save_session(session)
   local sessions_dir = M.get_sessions_dir()
   if not sessions_dir then
-    vim.notify("Wander: Failed to get sessions directory", vim.log.levels.ERROR)
+    vim.notify("Tabi: Failed to get sessions directory", vim.log.levels.ERROR)
     return false
   end
 
@@ -54,7 +54,7 @@ function M.save_session(session)
 
   local file = io.open(file_path, "w")
   if not file then
-    vim.notify("Wander: Failed to save session: " .. file_path, vim.log.levels.ERROR)
+    vim.notify("Tabi: Failed to save session: " .. file_path, vim.log.levels.ERROR)
     return false
   end
 
@@ -83,7 +83,7 @@ function M.load_session(session_id)
 
   local ok, session = pcall(vim.json.decode, content)
   if not ok then
-    vim.notify("Wander: Failed to parse session file: " .. file_path, vim.log.levels.ERROR)
+    vim.notify("Tabi: Failed to parse session file: " .. file_path, vim.log.levels.ERROR)
     return nil
   end
 
@@ -139,7 +139,7 @@ function M.delete_session(session_id)
   local file_path = sessions_dir .. "/" .. session_id .. ".json"
   local ok, err = os.remove(file_path)
   if not ok then
-    vim.notify("Wander: Failed to delete session: " .. (err or "unknown error"), vim.log.levels.ERROR)
+    vim.notify("Tabi: Failed to delete session: " .. (err or "unknown error"), vim.log.levels.ERROR)
     return false
   end
 

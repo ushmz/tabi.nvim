@@ -1,4 +1,4 @@
----@class WanderUtils
+---@class TabiUtils
 local M = {}
 
 --- Generate a UUID v4

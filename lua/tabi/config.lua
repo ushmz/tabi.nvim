@@ -1,33 +1,33 @@
----@class WanderConfig
+---@class TabiConfig
 local M = {}
 
----@class WanderOptions
----@field storage WanderStorageConfig
----@field ui WanderUIConfig
+---@class TabiOptions
+---@field storage TabiStorageConfig
+---@field ui TabiUIConfig
 
----@class WanderStorageConfig
+---@class TabiStorageConfig
 ---@field backend 'local'|'global'
 
----@class WanderUIConfig
+---@class TabiUIConfig
 ---@field selector 'native'|'telescope'|'float'
 ---@field note_preview_length number
 ---@field use_icons boolean
----@field float_config WanderFloatConfig
----@field telescope WanderTelescopeConfig
+---@field float_config TabiFloatConfig
+---@field telescope TabiTelescopeConfig
 
----@class WanderFloatConfig
+---@class TabiFloatConfig
 ---@field width number
 ---@field height number
 ---@field border string
 
----@class WanderTelescopeConfig
+---@class TabiTelescopeConfig
 ---@field theme string|nil
 ---@field layout_config table
 
 --- Default configuration
 M.defaults = {
   storage = {
-    backend = "local", -- 'local' (.git/wander/) or 'global' (XDG_DATA_HOME)
+    backend = "local", -- 'local' (.git/tabi/) or 'global' (XDG_DATA_HOME)
   },
   ui = {
     selector = "native", -- 'native', 'telescope', or 'float'
@@ -49,13 +49,13 @@ M.defaults = {
 M.options = vim.deepcopy(M.defaults)
 
 --- Setup configuration
----@param opts WanderOptions|nil
+---@param opts TabiOptions|nil
 function M.setup(opts)
   M.options = vim.tbl_deep_extend("force", M.defaults, opts or {})
 end
 
 --- Get current configuration
----@return WanderOptions
+---@return TabiOptions
 function M.get()
   return M.options
 end
