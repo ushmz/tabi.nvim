@@ -271,7 +271,7 @@ describe("edge cases: data integrity", function()
 
     it("should handle quotes and backslashes", function()
       local session = session_module.create("quotes-test")
-      local content = 'Quote: "test" and \'single\' with \\ backslash'
+      local content = "Quote: \"test\" and 'single' with \\ backslash"
       local note = note_module.create("/test.lua", 1, content)
 
       session_module.add_note(session, note)
