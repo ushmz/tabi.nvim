@@ -25,14 +25,16 @@ local commands = {}
 function commands.start_session(args)
   local session_name = args[2]
 
+  -- If there's already an active session, continue with it
   if wander.state.current_session then
     local current = session_module.load(wander.state.current_session)
     if current then
-      vim.notify('Wander: Session "' .. current.name .. '" is already active. End it first.', vim.log.levels.WARN)
+      vim.notify('Wander: Session "' .. current.name .. '" is already active. Continuing...', vim.log.levels.INFO)
       return
     end
   end
 
+  -- Create new session
   local session = session_module.create(session_name)
   if not session then
     return

@@ -19,17 +19,26 @@ local DEFAULT_SESSION_ID = "default"
 ---@param name string|nil Session name
 ---@return SessionData|nil
 function M.create(name)
-  local session_name = name or "default"
-  local session_id = name and utils.uuid() or DEFAULT_SESSION_ID
-
-  -- Check if session already exists (for named sessions)
+  -- Generate session name if not provided
+  local session_name
   if name then
-    local backend = storage.get_backend()
-    if backend and backend.session_exists(session_id) then
-      vim.notify("Wander: Session with this name already exists", vim.log.levels.WARN)
+    session_name = name
+  else
+    -- Generate default name based on timestamp
+    session_name = "session-" .. os.date("%Y%m%d-%H%M%S")
+  end
+
+  -- Check if session with same name already exists
+  local existing_sessions = M.list()
+  for _, existing in ipairs(existing_sessions) do
+    if existing.name == session_name then
+      vim.notify("Wander: Session with name '" .. session_name .. "' already exists", vim.log.levels.WARN)
       return nil
     end
   end
+
+  -- Always generate new UUID for session ID
+  local session_id = utils.uuid()
 
   local session = {
     id = session_id,
