@@ -70,7 +70,10 @@ function commands.end_session()
 end
 
 --- Create or edit a note
-function commands.note(args)
+---@param args string[]
+---@param range_start number|nil
+---@param range_end number|nil
+function commands.note(args, range_start, range_end)
   local action = args[2]
 
   if action == "edit" then
@@ -90,8 +93,17 @@ function commands.note(args)
     return
   end
 
-  local cursor = vim.api.nvim_win_get_cursor(0)
-  local line = cursor[1]
+  local line, end_line
+  if range_start and range_end then
+    -- Use visual selection range
+    line = range_start
+    end_line = range_end
+  else
+    -- Use cursor position
+    local cursor = vim.api.nvim_win_get_cursor(0)
+    line = cursor[1]
+    end_line = line
+  end
 
   -- Get or create session
   local session
@@ -126,7 +138,7 @@ function commands.note(args)
       vim.notify("Tabi: Note updated", vim.log.levels.INFO)
     else
       -- Create new note
-      local note = note_module.create(file_path, line, content)
+      local note = note_module.create(file_path, line, content, end_line)
       session_module.add_note(session, note)
       vim.notify("Tabi: Note added", vim.log.levels.INFO)
     end
@@ -366,7 +378,13 @@ vim.api.nvim_create_user_command("Tabi", function(opts)
   elseif subcommand == "end" then
     commands.end_session()
   elseif subcommand == "note" or subcommand == "memo" then
-    commands.note(args)
+    -- Pass range information if available
+    local range_start, range_end
+    if opts.range == 2 then
+      range_start = opts.line1
+      range_end = opts.line2
+    end
+    commands.note(args, range_start, range_end)
   elseif subcommand == "retrace" then
     if args[2] == "end" then
       retrace.stop()
@@ -393,6 +411,7 @@ vim.api.nvim_create_user_command("Tabi", function(opts)
   end
 end, {
   nargs = "+",
+  range = true,
   desc = "Tabi code reading session manager",
   complete = function(arg_lead, cmdline, _)
     local subcommands = {
