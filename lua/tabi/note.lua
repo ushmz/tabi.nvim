@@ -7,6 +7,7 @@ local utils = require("tabi.utils")
 ---@field id string
 ---@field file string
 ---@field line number
+---@field end_line number|nil
 ---@field content string
 ---@field created_at string
 
@@ -14,12 +15,14 @@ local utils = require("tabi.utils")
 ---@param file_path string
 ---@param line number
 ---@param content string
+---@param end_line number|nil
 ---@return NoteData
-function M.create(file_path, line, content)
+function M.create(file_path, line, content, end_line)
   return {
     id = utils.uuid(),
     file = file_path,
     line = line,
+    end_line = end_line or line,
     content = content or "",
     created_at = utils.timestamp(),
   }
@@ -69,7 +72,13 @@ function M.format(note)
   end
 
   local file_name = vim.fn.fnamemodify(note.file, ":t")
-  return string.format("%s:%d - %s", file_name, note.line, title)
+  local line_info
+  if note.end_line and note.end_line ~= note.line then
+    line_info = string.format("%d-%d", note.line, note.end_line)
+  else
+    line_info = tostring(note.line)
+  end
+  return string.format("%s:%s - %s", file_name, line_info, title)
 end
 
 return M

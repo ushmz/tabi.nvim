@@ -206,8 +206,11 @@ end
 ---@return NoteData|nil
 function M.get_note_at_line(session, file_path, line)
   for _, note in ipairs(session.notes) do
-    if note.file == file_path and note.line == line then
-      return note
+    if note.file == file_path then
+      local note_end_line = note.end_line or note.line
+      if line >= note.line and line <= note_end_line then
+        return note
+      end
     end
   end
   return nil
