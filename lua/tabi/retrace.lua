@@ -1,6 +1,8 @@
 ---@class TabiRetrace
 local M = {}
 
+local display = require("tabi.ui.display")
+
 ---@class RetraceState
 ---@field session SessionData
 ---@field current_index number
@@ -41,6 +43,9 @@ function M.start(session)
     loclist_bufwin = nil,
   }
 
+  -- Display all session notes as virtual lines
+  display.display_all_session_notes(session)
+
   -- Open location list window
   vim.cmd("silent! lopen")
 
@@ -60,6 +65,9 @@ function M.stop()
     vim.notify("Tabi: Not in retrace mode", vim.log.levels.WARN)
     return
   end
+
+  -- Clear all virtual line displays
+  display.clear_all_session_notes(state.session)
 
   -- Clear location list if the window is still valid
   if state.loclist_win and vim.api.nvim_win_is_valid(state.loclist_win) then
