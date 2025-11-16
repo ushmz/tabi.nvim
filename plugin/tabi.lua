@@ -133,8 +133,9 @@ function commands.note(args)
 
     -- Refresh display
     if retrace.is_active() then
-      -- In retrace mode, refresh virtual line display
+      -- In retrace mode, refresh virtual line display and location list
       display.display_all_session_notes(session)
+      retrace.refresh_loclist()
     else
       display.update_for_session(bufnr, session)
     end
@@ -178,6 +179,7 @@ function commands.note_edit()
     vim.notify("Tabi: Note updated", vim.log.levels.INFO)
     if retrace.is_active() then
       display.display_all_session_notes(session)
+      retrace.refresh_loclist()
     else
       display.update_for_session(bufnr, session)
     end
@@ -219,6 +221,7 @@ function commands.note_delete()
   vim.notify("Tabi: Note deleted", vim.log.levels.INFO)
   if retrace.is_active() then
     display.display_all_session_notes(session)
+    retrace.refresh_loclist()
   else
     display.update_for_session(bufnr, session)
   end

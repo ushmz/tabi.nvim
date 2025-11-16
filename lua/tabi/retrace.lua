@@ -152,4 +152,32 @@ function M.get_state()
   return state
 end
 
+--- Refresh location list with current session notes
+function M.refresh_loclist()
+  if not state then
+    return
+  end
+
+  -- Rebuild location list items from notes
+  local loclist_items = {}
+  for _, note in ipairs(state.session.notes) do
+    table.insert(loclist_items, {
+      filename = note.file,
+      lnum = note.line,
+      col = 1,
+      text = note.content:gsub("\n", " "),
+    })
+  end
+
+  -- Update location list
+  if state.loclist_win and vim.api.nvim_win_is_valid(state.loclist_win) then
+    vim.fn.setloclist(state.loclist_win, loclist_items)
+  end
+
+  -- Adjust current index if it's out of bounds
+  if state.current_index > #state.session.notes then
+    state.current_index = math.max(1, #state.session.notes)
+  end
+end
+
 return M
