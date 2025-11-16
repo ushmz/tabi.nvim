@@ -2,6 +2,9 @@
 
 A Neovim plugin for managing code reading sessions with notes and replay functionality.
 
+> [!WARNING]
+> This plugin is in early development stage. Breaking changes may occur without notice.
+
 ## Features
 
 - **Session Management**: Organize your code reading sessions with named sessions
@@ -148,7 +151,6 @@ This is useful for personal notes across multiple projects.
   - `:w` - Save and close
 
 - **Integrations**:
-  - Works with [dressing.nvim](https://github.com/stevearc/dressing.nvim) for better UI
   - Session selector integrates with [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) if configured
 
 ## Development
@@ -169,5 +171,3 @@ MIT
 ## Credits
 
 Created by [@ushmz](https://github.com/ushmz)
-
-Built with the assistance of Claude Code.
