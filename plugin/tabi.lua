@@ -13,7 +13,7 @@ local note_module = require("tabi.note")
 local float = require("tabi.ui.float")
 local display = require("tabi.ui.display")
 local retrace = require("tabi.retrace")
-local selector = require("tabi.ui.selector.native")
+local selector_factory = require("tabi.ui.selector")
 
 -- Initialize display
 display.init()
@@ -261,7 +261,8 @@ function commands.retrace(args)
 
     retrace.start(session)
   else
-    -- Show session selector
+    -- Show session selector based on configuration
+    local selector = selector_factory.get_selector()
     selector.select_session(function(session)
       retrace.start(session)
     end)
