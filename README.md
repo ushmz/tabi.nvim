@@ -55,8 +55,57 @@ require('tabi').setup({
       border = 'rounded',
     },
   },
+  keymaps = {
+    enabled = true, -- Set to false to disable all default keymaps
+    start = '<Leader>ts',
+    ['end'] = '<Leader>te',
+    note = '<Leader>tn',
+    note_delete = '<Leader>td',
+    retrace = '<Leader>tr',
+    retrace_end = '<Leader>tq',
+    sessions = '<Leader>tl',
+  },
 })
 ```
+
+### Customizing Keymaps
+
+You can override individual keymaps or disable them by setting to `false`:
+
+```lua
+require('tabi').setup({
+  keymaps = {
+    note = '<Leader>an',  -- Custom key for note
+    next = ']n',          -- Custom key for next
+    prev = '[n',          -- Custom key for prev
+    start = false,        -- Disable start keymap
+  },
+})
+```
+
+To disable all default keymaps:
+
+```lua
+require('tabi').setup({
+  keymaps = {
+    enabled = false,
+  },
+})
+```
+
+## Default Keymaps
+
+| Key | Mode | Command | Description |
+|-----|------|---------|-------------|
+| `<Leader>ts` | Normal | `:Tabi start` | Start a new session |
+| `<Leader>te` | Normal | `:Tabi end` | End the current session |
+| `<Leader>tn` | Normal/Visual | `:Tabi note` | Add/edit note at current line |
+| `<Leader>td` | Normal | `:Tabi note delete` | Delete note at current line |
+| `<Leader>tr` | Normal | `:Tabi retrace` | Start retrace mode |
+| `<Leader>tq` | Normal | `:Tabi retrace end` | Quit retrace mode |
+| `<Leader>tl` | Normal | `:Tabi sessions` | List all sessions |
+
+**Note**: In retrace mode, use Neovim's location list commands (`:lnext`, `:lprev`) to navigate between notes.
 
 ## Usage
 
@@ -87,7 +136,7 @@ require('tabi').setup({
    ```vim
    :Tabi retrace my-reading-session
    ```
-   - Navigate through notes with `:Tabi next` and `:Tabi prev`
+   - Navigate through notes with `:lnext` and `:lprev` (location list commands)
    - Exit retrace mode with `:Tabi retrace end`
 
 ### Commands
@@ -115,8 +164,7 @@ require('tabi').setup({
 | Command | Description |
 |---------|-------------|
 | `:Tabi retrace [name]` | Start replaying a session |
-| `:Tabi next` | Go to next note in replay |
-| `:Tabi prev` | Go to previous note in replay |
+| `:lnext` / `:lprev` | Navigate through notes (location list) |
 | `:Tabi retrace end` | Exit retrace mode |
 
 ### Anonymous Sessions

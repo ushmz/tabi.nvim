@@ -4,9 +4,20 @@ local M = {}
 ---@class TabiOptions
 ---@field storage TabiStorageConfig
 ---@field ui TabiUIConfig
+---@field keymaps TabiKeymapsConfig
 
 ---@class TabiStorageConfig
 ---@field backend 'local'|'global'
+
+---@class TabiKeymapsConfig
+---@field enabled boolean
+---@field start string|false
+---@field ["end"] string|false
+---@field note string|false
+---@field note_delete string|false
+---@field retrace string|false
+---@field retrace_end string|false
+---@field sessions string|false
 
 ---@class TabiUIConfig
 ---@field selector 'native'|'telescope'|'float'
@@ -42,6 +53,16 @@ M.defaults = {
       theme = nil,
       layout_config = {},
     },
+  },
+  keymaps = {
+    enabled = true,
+    start = "<Leader>ts",
+    ["end"] = "<Leader>te",
+    note = "<Leader>tn",
+    note_delete = "<Leader>td",
+    retrace = "<Leader>tr",
+    retrace_end = "<Leader>tq",
+    sessions = "<Leader>tl",
   },
 }
 

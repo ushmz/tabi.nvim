@@ -23,6 +23,10 @@ function M.setup(opts)
 
   -- Setup autocommands and highlights
   M._setup_highlights()
+
+  -- Setup keymaps
+  local keymaps = require("tabi.keymaps")
+  keymaps.setup()
 end
 
 --- Setup highlight groups
