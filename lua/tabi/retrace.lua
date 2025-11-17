@@ -53,7 +53,7 @@ function M.start(session)
   state.loclist_bufwin = vim.api.nvim_get_current_win()
 
   -- Jump to first note (this will focus the location list)
-  M.show_current(true) -- silent=true to avoid double notification
+  M.show_current(true)
 
   vim.notify(string.format("Tabi: Retrace mode started - Note 1/%d", #session.notes), vim.log.levels.INFO)
   return true
@@ -121,7 +121,7 @@ function M.next()
   end
 
   state.current_index = state.current_index + 1
-  M.show_current()
+  M.show_current(true)
 end
 
 --- Go to previous note
@@ -137,7 +137,7 @@ function M.prev()
   end
 
   state.current_index = state.current_index - 1
-  M.show_current()
+  M.show_current(true)
 end
 
 --- Check if in retrace mode
