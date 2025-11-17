@@ -160,9 +160,44 @@ This is useful for personal notes across multiple projects.
 git clone https://github.com/ushmz/tabi.nvim.git
 cd tabi.nvim
 
-# Run tests (if available)
-# TBD
+# Run tests with vusted
+vusted test/
+
+# Run specific test file
+vusted test/tabi/session_spec.lua
+
+# Lint with luacheck
+luacheck .
+
+# Check formatting with stylua
+stylua --check .
+
+# Auto-format
+stylua .
 ```
+
+### Testing
+
+This project uses [vusted](https://github.com/notomo/vusted) for testing. vusted is a wrapper around [busted](https://github.com/lunarmodules/busted) that provides a Neovim testing environment.
+
+**Install vusted:**
+
+```bash
+luarocks install vusted
+```
+
+**Test structure:**
+
+```
+test/
+├── helper.lua              # Test utilities and setup
+└── tabi/
+    ├── *_spec.lua          # Unit tests for each module
+    ├── integration/        # Integration tests
+    └── edge_cases/         # Edge case and error handling tests
+```
+
+Tests follow the busted BDD style with `describe`, `it`, `before_each`, and `after_each` blocks.
 
 ## License
 
