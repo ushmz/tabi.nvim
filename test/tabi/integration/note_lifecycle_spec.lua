@@ -170,15 +170,15 @@ describe("integration: note lifecycle", function()
       assert.is_true(#signs[1].signs > 0)
       assert.are.equal(2, signs[1].signs[1].lnum)
 
-      -- Verify virtual text is added
+      -- Verify virtual lines are added
       local extmarks = vim.api.nvim_buf_get_extmarks(test_bufnr, ns, 0, -1, { details = true })
-      local found_virt_text = false
+      local found_virt_lines = false
       for _, mark in ipairs(extmarks) do
-        if mark[4] and mark[4].virt_text then
-          found_virt_text = true
+        if mark[4] and mark[4].virt_lines then
+          found_virt_lines = true
         end
       end
-      assert.is_true(found_virt_text)
+      assert.is_true(found_virt_lines)
 
       -- 4. Verify persistence (session was saved by add_note)
       local loaded = session_module.load(session.id)
@@ -207,12 +207,12 @@ describe("integration: note lifecycle", function()
       local notes_before = session_module.get_notes_for_file(session, test_file)
       display.refresh_buffer(test_bufnr, notes_before)
 
-      -- Verify initial virtual text
+      -- Verify initial virtual lines
       local extmarks_before = vim.api.nvim_buf_get_extmarks(test_bufnr, ns, 0, -1, { details = true })
       local original_text = nil
       for _, mark in ipairs(extmarks_before) do
-        if mark[4] and mark[4].virt_text then
-          original_text = mark[4].virt_text[1][1]
+        if mark[4] and mark[4].virt_lines then
+          original_text = mark[4].virt_lines[1][1][1]
         end
       end
       assert.is_not_nil(original_text)
@@ -225,12 +225,12 @@ describe("integration: note lifecycle", function()
       local notes_after = session_module.get_notes_for_file(session, test_file)
       display.refresh_buffer(test_bufnr, notes_after)
 
-      -- Verify updated virtual text
+      -- Verify updated virtual lines
       local extmarks_after = vim.api.nvim_buf_get_extmarks(test_bufnr, ns, 0, -1, { details = true })
       local updated_text = nil
       for _, mark in ipairs(extmarks_after) do
-        if mark[4] and mark[4].virt_text then
-          updated_text = mark[4].virt_text[1][1]
+        if mark[4] and mark[4].virt_lines then
+          updated_text = mark[4].virt_lines[1][1][1]
         end
       end
       assert.is_not_nil(updated_text)

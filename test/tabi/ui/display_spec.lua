@@ -44,69 +44,6 @@ describe("tabi.ui.display", function()
     end)
   end)
 
-  describe("display_note", function()
-    before_each(function()
-      display.init()
-    end)
-
-    it("should place sign at note line", function()
-      local note = note_module.create("/test.lua", 2, "Test note")
-
-      display.display_note(bufnr, note)
-
-      local signs = vim.fn.sign_getplaced(bufnr, { group = "tabi" })
-      assert.are.equal(1, #signs)
-      assert.is_true(#signs[1].signs > 0)
-      assert.are.equal(2, signs[1].signs[1].lnum)
-    end)
-
-    it("should add virtual text with preview", function()
-      local note = note_module.create("/test.lua", 3, "This is a test note")
-
-      display.display_note(bufnr, note)
-
-      -- Get extmarks
-      local extmarks = vim.api.nvim_buf_get_extmarks(bufnr, ns, 0, -1, { details = true })
-      assert.is_true(#extmarks > 0)
-
-      -- Check virtual text exists
-      local found_virt_text = false
-      for _, mark in ipairs(extmarks) do
-        if mark[4] and mark[4].virt_text then
-          found_virt_text = true
-          -- Check that virtual text contains note preview
-          local virt_text = mark[4].virt_text[1][1]
-          assert.is_true(virt_text:find("This is a test note") ~= nil)
-        end
-      end
-      assert.is_true(found_virt_text)
-    end)
-
-    it("should respect preview length from config", function()
-      config.setup({ ui = { note_preview_length = 10 } })
-      local note = note_module.create("/test.lua", 1, "This is a very long note content")
-
-      display.display_note(bufnr, note)
-
-      local extmarks = vim.api.nvim_buf_get_extmarks(bufnr, ns, 0, -1, { details = true })
-      for _, mark in ipairs(extmarks) do
-        if mark[4] and mark[4].virt_text then
-          local virt_text = mark[4].virt_text[1][1]
-          -- Should be truncated (10 chars + "...")
-          assert.is_true(#virt_text <= 20) -- space + 10 chars + "..."
-        end
-      end
-    end)
-
-    it("should not display for invalid buffer", function()
-      local invalid_bufnr = 99999
-      local note = note_module.create("/test.lua", 1, "Test")
-
-      -- Should not throw error
-      display.display_note(invalid_bufnr, note)
-    end)
-  end)
-
   describe("display_note_as_virtual_line", function()
     before_each(function()
       display.init()
@@ -160,7 +97,7 @@ describe("tabi.ui.display", function()
 
     it("should remove all extmarks", function()
       local note = note_module.create("/test.lua", 1, "Test")
-      display.display_note(bufnr, note)
+      display.display_note_as_virtual_line(bufnr, note)
 
       -- Verify extmarks exist
       local before = vim.api.nvim_buf_get_extmarks(bufnr, ns, 0, -1, {})
@@ -174,7 +111,7 @@ describe("tabi.ui.display", function()
 
     it("should remove all signs", function()
       local note = note_module.create("/test.lua", 2, "Test")
-      display.display_note(bufnr, note)
+      display.display_note_as_virtual_line(bufnr, note)
 
       display.clear_buffer(bufnr)
 

@@ -2,7 +2,6 @@
 local M = {}
 
 local config = require("tabi.config")
-local note_module = require("tabi.note")
 
 -- Namespace for virtual text and signs
 local ns = vim.api.nvim_create_namespace("tabi")
@@ -28,35 +27,6 @@ function M.clear_buffer(bufnr)
 
   -- Clear signs
   vim.fn.sign_unplace("tabi", { buffer = bufnr })
-end
-
---- Display a note in the buffer
----@param bufnr number
----@param note NoteData
-function M.display_note(bufnr, note)
-  if not vim.api.nvim_buf_is_valid(bufnr) then
-    return
-  end
-
-  local cfg = config.get()
-  local line = note.line - 1 -- 0-indexed for API
-
-  -- Add sign
-  if cfg.ui.use_icons then
-    vim.fn.sign_place(0, "tabi", SIGN_NAME, bufnr, {
-      lnum = note.line,
-      priority = 10,
-    })
-  end
-
-  -- Add virtual text with preview
-  local preview = note_module.get_preview(note, cfg.ui.note_preview_length)
-  if preview and preview ~= "" then
-    vim.api.nvim_buf_set_extmark(bufnr, ns, line, 0, {
-      virt_text = { { " " .. preview, "TabiNote" } },
-      virt_text_pos = "eol",
-    })
-  end
 end
 
 --- Display a note as virtual lines below the target line
@@ -113,7 +83,7 @@ function M.refresh_buffer(bufnr, notes)
   M.clear_buffer(bufnr)
 
   for _, note in ipairs(notes) do
-    M.display_note(bufnr, note)
+    M.display_note_as_virtual_line(bufnr, note)
   end
 end
 
