@@ -2,38 +2,38 @@
 local M = {}
 
 ---@class TabiOptions
----@field storage TabiStorageConfig
----@field ui TabiUIConfig
----@field keymaps TabiKeymapsConfig
+---@field storage? TabiStorageConfig
+---@field ui? TabiUIConfig
+---@field keymaps? TabiKeymapsConfig
 
 ---@class TabiStorageConfig
----@field backend 'local'|'global'
+---@field backend? 'local'|'global'
 
 ---@class TabiKeymapsConfig
----@field enabled boolean
----@field start string|false
----@field ["end"] string|false
----@field note string|false
----@field note_delete string|false
----@field retrace string|false
----@field retrace_end string|false
----@field sessions string|false
+---@field enabled? boolean
+---@field start? string|false
+---@field ["end"]? string|false
+---@field note? string|false
+---@field note_delete? string|false
+---@field retrace? string|false
+---@field retrace_end? string|false
+---@field sessions? string|false
 
 ---@class TabiUIConfig
----@field selector 'native'|'telescope'|'float'
----@field note_preview_length number
----@field use_icons boolean
----@field float_config TabiFloatConfig
----@field telescope TabiTelescopeConfig
+---@field selector? 'native'|'telescope'|'float'
+---@field note_preview_length? number
+---@field use_icons? boolean
+---@field float_config? TabiFloatConfig
+---@field telescope? TabiTelescopeConfig
 
 ---@class TabiFloatConfig
----@field width number
----@field height number
----@field border string
+---@field width? number
+---@field height? number
+---@field border? string
 
 ---@class TabiTelescopeConfig
----@field theme string|nil
----@field layout_config table
+---@field theme? string|nil
+---@field layout_config? table
 
 --- Default configuration
 M.defaults = {
