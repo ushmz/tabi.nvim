@@ -113,7 +113,7 @@ function M.refresh_buffer(bufnr, notes)
   M.clear_buffer(bufnr)
 
   for _, note in ipairs(notes) do
-    M.display_note(bufnr, note)
+    M.display_note_as_virtual_line(bufnr, note)
   end
 end
 
