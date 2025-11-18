@@ -11,9 +11,16 @@ local SIGN_NAME = "TabiNote"
 
 --- Initialize display (set up signs)
 function M.init()
+  -- Check if nvim-web-devicons is available
+  local has_devicons, _ = pcall(require, "nvim-web-devicons")
+
+  -- Use icon if devicons is available, otherwise use middle dot
+  -- 󱞂  󰟷 󰟶
+  local sign_text = has_devicons and "" or "･"
+
   -- Define sign
   vim.fn.sign_define(SIGN_NAME, {
-    text = "", -- Use icon or fallback
+    text = sign_text,
     texthl = "TabiNoteSign",
     numhl = "TabiLineNr",
   })
