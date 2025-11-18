@@ -49,12 +49,12 @@ function M.display_note(bufnr, note)
     })
   end
 
-  -- Add virtual text with preview
+  -- Add virtual lines with preview above the target line
   local preview = note_module.get_preview(note, cfg.ui.note_preview_length)
   if preview and preview ~= "" then
     vim.api.nvim_buf_set_extmark(bufnr, ns, line, 0, {
-      virt_text = { { " " .. preview, "TabiNote" } },
-      virt_text_pos = "eol",
+      virt_lines = { { { "Note: " .. preview, "TabiNote" } } },
+      virt_lines_above = true,
     })
   end
 end
