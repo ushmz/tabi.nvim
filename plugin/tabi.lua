@@ -215,12 +215,8 @@ function commands.note_delete()
   elseif tabi.state.current_session then
     session = session_module.load(tabi.state.current_session)
   else
-    session = session_module.load("default")
-  end
-
-  if not session then
-    vim.notify("Tabi: No session found", vim.log.levels.WARN)
-    return
+    session = session_module.get_or_create_default()
+    tabi.state.current_session = session.id
   end
 
   local note = session_module.get_note_at_line(session, file_path, line)
