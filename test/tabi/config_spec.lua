@@ -123,5 +123,24 @@ describe("tabi.config", function()
       assert.is_nil(config.defaults.ui.telescope.theme)
       assert.is_table(config.defaults.ui.telescope.layout_config)
     end)
+
+    it("should have show_default_notes enabled by default", function()
+      assert.is_true(config.defaults.show_default_notes)
+    end)
+  end)
+
+  describe("show_default_notes", function()
+    it("should default to true", function()
+      local opts = config.get()
+      assert.is_true(opts.show_default_notes)
+    end)
+
+    it("should be configurable", function()
+      config.setup({
+        show_default_notes = false,
+      })
+      local opts = config.get()
+      assert.is_false(opts.show_default_notes)
+    end)
   end)
 end)

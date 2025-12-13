@@ -50,6 +50,13 @@ end
 
 --- Setup background display for default session
 function M._setup_default_session_display()
+  local config = require("tabi.config")
+
+  -- Early return if feature is disabled
+  if not config.get().show_default_notes then
+    return
+  end
+
   local session_module = require("tabi.session")
   local display = require("tabi.ui.display")
 
