@@ -43,6 +43,16 @@ function M.start(session)
     loclist_bufwin = nil,
   }
 
+  -- Clear default session display when entering retrace mode
+  local config = require("tabi.config")
+  if config.get().show_default_notes then
+    local session_module = require("tabi.session")
+    local default_session = session_module.load("default")
+    if default_session then
+      display.clear_all_session_notes(default_session)
+    end
+  end
+
   -- Display all session notes as virtual lines
   display.display_all_session_notes(session)
 
@@ -75,6 +85,15 @@ function M.stop()
   end
 
   state = nil
+
+  -- Restore default session display
+  local config = require("tabi.config")
+  if config.get().show_default_notes then
+    vim.schedule(function()
+      require("tabi")._setup_default_session_display()
+    end)
+  end
+
   vim.notify("Tabi: Retrace mode ended", vim.log.levels.INFO)
 end
 

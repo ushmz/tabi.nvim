@@ -68,6 +68,15 @@ function commands.start_session(args)
   tabi.state.current_session = session.id
   display.setup_autocmds(session)
 
+  -- Clear default session display when starting named session
+  local config = require("tabi.config")
+  if config.get().show_default_notes then
+    local default_session = session_module.load("default")
+    if default_session then
+      display.clear_all_session_notes(default_session)
+    end
+  end
+
   vim.notify('Tabi: Session "' .. session.name .. '" started', vim.log.levels.INFO)
 end
 
@@ -91,6 +100,14 @@ function commands.end_session()
     if vim.api.nvim_buf_is_valid(bufnr) then
       display.clear_buffer(bufnr)
     end
+  end
+
+  -- Restore default session display
+  local config = require("tabi.config")
+  if config.get().show_default_notes then
+    vim.schedule(function()
+      tabi._setup_default_session_display()
+    end)
   end
 end
 
