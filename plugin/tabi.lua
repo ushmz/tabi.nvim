@@ -21,6 +21,31 @@ display.init()
 -- Command implementations
 local commands = {}
 
+--- Get the appropriate session for note operations
+--- Considers retrace mode, current session, and creates default if needed
+---@return SessionData
+local function get_session_for_note_operation()
+  local session
+
+  -- If in retrace mode, use the retrace session
+  if retrace.is_active() then
+    local retrace_state = retrace.get_state()
+    if retrace_state then
+      session = retrace_state.session
+    end
+  elseif tabi.state.current_session then
+    session = session_module.load(tabi.state.current_session)
+  end
+
+  if not session then
+    session = session_module.get_or_create_default()
+    tabi.state.current_session = session.id
+    display.setup_autocmds(session)
+  end
+
+  return session
+end
+
 --- Start a new session
 function commands.start_session(args)
   local session_name = args[2]
@@ -106,22 +131,7 @@ function commands.note(args, range_start, range_end)
   end
 
   -- Get or create session
-  local session
-  -- If in retrace mode, use the retrace session
-  if retrace.is_active() then
-    local retrace_state = retrace.get_state()
-    if retrace_state then
-      session = retrace_state.session
-    end
-  elseif tabi.state.current_session then
-    session = session_module.load(tabi.state.current_session)
-  end
-
-  if not session then
-    session = session_module.get_or_create_default()
-    tabi.state.current_session = session.id
-    display.setup_autocmds(session)
-  end
+  local session = get_session_for_note_operation()
 
   -- Check if note already exists at this line
   local existing_note = session_module.get_note_at_line(session, file_path, line)
@@ -161,19 +171,7 @@ function commands.note_edit()
   local cursor = vim.api.nvim_win_get_cursor(0)
   local line = cursor[1]
 
-  local session
-  -- If in retrace mode, use the retrace session
-  if retrace.is_active() then
-    local retrace_state = retrace.get_state()
-    if retrace_state then
-      session = retrace_state.session
-    end
-  elseif tabi.state.current_session then
-    session = session_module.load(tabi.state.current_session)
-  else
-    session = session_module.get_or_create_default()
-    tabi.state.current_session = session.id
-  end
+  local session = get_session_for_note_operation()
 
   local note = session_module.get_note_at_line(session, file_path, line)
   if not note then
@@ -205,19 +203,7 @@ function commands.note_delete()
   local cursor = vim.api.nvim_win_get_cursor(0)
   local line = cursor[1]
 
-  local session
-  -- If in retrace mode, use the retrace session
-  if retrace.is_active() then
-    local retrace_state = retrace.get_state()
-    if retrace_state then
-      session = retrace_state.session
-    end
-  elseif tabi.state.current_session then
-    session = session_module.load(tabi.state.current_session)
-  else
-    session = session_module.get_or_create_default()
-    tabi.state.current_session = session.id
-  end
+  local session = get_session_for_note_operation()
 
   local note = session_module.get_note_at_line(session, file_path, line)
   if not note then
