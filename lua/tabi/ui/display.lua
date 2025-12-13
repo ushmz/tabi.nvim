@@ -66,12 +66,15 @@ function M.display_note_as_virtual_line(bufnr, note)
     })
   end
 
+  -- Get indent from the target line
+  local line_content = vim.api.nvim_buf_get_lines(bufnr, line, line + 1, false)[1] or ""
+  local indent = line_content:match("^%s*") or ""
+
   -- Split note content into lines for virtual lines
   local virt_lines = {}
   local content_lines = vim.split(note.content, "\n", { plain = true })
-  for i, content_line in ipairs(content_lines) do
-    local prefix = i == 1 and "Note: " or "      "
-    table.insert(virt_lines, { { prefix .. content_line, "TabiNote" } })
+  for _, content_line in ipairs(content_lines) do
+    table.insert(virt_lines, { { indent .. content_line, "TabiNote" } })
   end
 
   -- Add virtual lines above the target line
