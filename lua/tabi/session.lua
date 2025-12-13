@@ -92,16 +92,23 @@ function M.get_or_create_default()
     return session
   end
 
-  return M.create(nil)
-    or {
-      id = DEFAULT_SESSION_ID,
-      name = "default",
-      created_at = utils.timestamp(),
-      updated_at = utils.timestamp(),
-      branch = utils.get_git_branch(),
-      tag = nil,
-      notes = {},
-    }
+  -- Create default session with fixed ID and name
+  local default_session = {
+    id = DEFAULT_SESSION_ID,
+    name = "default",
+    created_at = utils.timestamp(),
+    updated_at = utils.timestamp(),
+    branch = utils.get_git_branch(),
+    tag = nil,
+    notes = {},
+  }
+
+  local backend = storage.get_backend()
+  if backend and backend.save_session then
+    backend.save_session(default_session)
+  end
+
+  return default_session
 end
 
 --- List all sessions
