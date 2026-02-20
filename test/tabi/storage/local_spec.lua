@@ -3,7 +3,7 @@ local utils = require("tabi.utils")
 
 describe("tabi.storage.local", function()
   local temp_dir
-  local original_get_git_root
+  local original_get_git_common_dir
   local original_is_git_repo
 
   before_each(function()
@@ -12,11 +12,11 @@ describe("tabi.storage.local", function()
     vim.fn.mkdir(temp_dir .. "/.git", "p")
 
     -- Mock git functions
-    original_get_git_root = utils.get_git_root
+    original_get_git_common_dir = utils.get_git_common_dir
     original_is_git_repo = utils.is_git_repo
 
-    utils.get_git_root = function()
-      return temp_dir
+    utils.get_git_common_dir = function()
+      return temp_dir .. "/.git"
     end
 
     utils.is_git_repo = function()
@@ -26,7 +26,7 @@ describe("tabi.storage.local", function()
 
   after_each(function()
     -- Restore original functions
-    utils.get_git_root = original_get_git_root
+    utils.get_git_common_dir = original_get_git_common_dir
     utils.is_git_repo = original_is_git_repo
 
     -- Clean up temporary directory
@@ -42,7 +42,7 @@ describe("tabi.storage.local", function()
     end)
 
     it("should return nil when not in git repo", function()
-      utils.get_git_root = function()
+      utils.get_git_common_dir = function()
         return nil
       end
       local dir = local_storage.get_storage_dir()
@@ -57,7 +57,7 @@ describe("tabi.storage.local", function()
     end)
 
     it("should return nil when not in git repo", function()
-      utils.get_git_root = function()
+      utils.get_git_common_dir = function()
         return nil
       end
       local dir = local_storage.get_sessions_dir()
