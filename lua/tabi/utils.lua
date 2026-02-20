@@ -53,6 +53,35 @@ function M.get_git_root()
   return root and vim.trim(root) or nil
 end
 
+--- Get git common directory
+--- In linked worktrees, this points to the main repository's .git directory.
+---@return string|nil
+function M.get_git_common_dir()
+  local handle = io.popen("git rev-parse --git-common-dir 2>/dev/null")
+  if not handle then
+    return nil
+  end
+
+  local git_common_dir = handle:read("*a")
+  handle:close()
+  git_common_dir = git_common_dir and vim.trim(git_common_dir) or nil
+
+  if not git_common_dir or git_common_dir == "" then
+    return nil
+  end
+
+  -- rev-parse can return a relative path (e.g. ".git"), so normalize to absolute.
+  if git_common_dir:sub(1, 1) ~= "/" then
+    local git_root = M.get_git_root()
+    if not git_root then
+      return nil
+    end
+    git_common_dir = git_root .. "/" .. git_common_dir
+  end
+
+  return git_common_dir
+end
+
 --- Ensure directory exists
 ---@param path string
 function M.ensure_dir(path)

@@ -33,6 +33,52 @@ describe("tabi.utils", function()
     end)
   end)
 
+  describe("get_git_common_dir", function()
+    local original_popen
+    local original_get_git_root
+
+    before_each(function()
+      original_popen = io.popen
+      original_get_git_root = utils.get_git_root
+    end)
+
+    after_each(function()
+      io.popen = original_popen
+      utils.get_git_root = original_get_git_root
+    end)
+
+    it("should return absolute path as-is", function()
+      io.popen = function()
+        return {
+          read = function()
+            return "/tmp/repo/.git\n"
+          end,
+          close = function() end,
+        }
+      end
+
+      local dir = utils.get_git_common_dir()
+      assert.are.equal("/tmp/repo/.git", dir)
+    end)
+
+    it("should resolve relative path against git root", function()
+      io.popen = function()
+        return {
+          read = function()
+            return ".git\n"
+          end,
+          close = function() end,
+        }
+      end
+      utils.get_git_root = function()
+        return "/tmp/repo"
+      end
+
+      local dir = utils.get_git_common_dir()
+      assert.are.equal("/tmp/repo/.git", dir)
+    end)
+  end)
+
   describe("relative_path", function()
     it("should calculate relative path from base", function()
       local base = "/home/user/project"
