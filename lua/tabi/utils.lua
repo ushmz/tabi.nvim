@@ -53,6 +53,29 @@ function M.get_git_root()
   return root and vim.trim(root) or nil
 end
 
+--- Get git common directory (resolves git worktree gitfiles to the actual .git directory)
+--- In a normal repo, returns the same as .git directory.
+--- In a worktree, returns the main repository's .git directory instead of the worktree-specific one.
+---@return string|nil
+function M.get_git_common_dir()
+  local handle = io.popen("git rev-parse --git-common-dir 2>/dev/null")
+  if not handle then
+    return nil
+  end
+  local dir = handle:read("*a")
+  handle:close()
+  if not dir or vim.trim(dir) == "" then
+    return nil
+  end
+  dir = vim.trim(dir)
+  -- --git-common-dir may return a relative path; convert to absolute
+  if not vim.startswith(dir, "/") then
+    local cwd = vim.fn.getcwd()
+    dir = cwd .. "/" .. dir
+  end
+  return dir
+end
+
 --- Ensure directory exists
 ---@param path string
 function M.ensure_dir(path)

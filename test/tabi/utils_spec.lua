@@ -64,6 +64,20 @@ describe("tabi.utils", function()
     end)
   end)
 
+  describe("get_git_common_dir", function()
+    it("should return a non-empty string when in a git repo", function()
+      -- This test runs inside the tabi.nvim git repo
+      local dir = utils.get_git_common_dir()
+      -- May be nil in environments without git, so only assert format when non-nil
+      if dir ~= nil then
+        assert.is_string(dir)
+        assert.is_true(#dir > 0)
+        -- Must be an absolute path
+        assert.is_true(vim.startswith(dir, "/"), "get_git_common_dir should return an absolute path, got: " .. dir)
+      end
+    end)
+  end)
+
   describe("ensure_dir", function()
     local temp_dir
 
