@@ -4,13 +4,14 @@ local M = {}
 local utils = require("tabi.utils")
 
 --- Get storage directory path
+--- Uses git common directory to support git worktrees, where .git is a file rather than a directory.
 ---@return string|nil
 function M.get_storage_dir()
-  local git_root = utils.get_git_root()
-  if not git_root then
+  local git_common_dir = utils.get_git_common_dir()
+  if not git_common_dir then
     return nil
   end
-  return git_root .. "/.git/tabi"
+  return git_common_dir .. "/tabi"
 end
 
 --- Get sessions directory path
