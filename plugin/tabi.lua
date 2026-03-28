@@ -368,6 +368,20 @@ function commands.session_rename(args)
   end
 end
 
+-- Sync note positions from extmarks just before the buffer is written to disk
+vim.api.nvim_create_autocmd("BufWritePre", {
+  group = vim.api.nvim_create_augroup("TabiPositionSync", { clear = true }),
+  callback = function(args)
+    if not tabi.state.current_session then
+      return
+    end
+    local session = session_module.load(tabi.state.current_session)
+    if session then
+      session_module.sync_positions_from_extmarks(session, args.buf)
+    end
+  end,
+})
+
 -- Create user commands
 vim.api.nvim_create_user_command("Tabi", function(opts)
   local args = vim.split(vim.trim(opts.args), "%s+")

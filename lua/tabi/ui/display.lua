@@ -92,8 +92,12 @@ end
 function M.refresh_buffer(bufnr, notes)
   M.clear_buffer(bufnr)
 
+  local extmarks = require("tabi.extmarks")
+  extmarks.clear(bufnr)
+
   for _, note in ipairs(notes) do
     M.display_note_as_virtual_line(bufnr, note)
+    extmarks.track(bufnr, note)
   end
 end
 
@@ -135,6 +139,14 @@ function M.setup_autocmds(session)
     callback = function()
       -- Optionally keep display visible
       -- M.clear_buffer(args.buf)
+    end,
+  })
+
+  -- Clean up extmarks when a buffer is deleted
+  vim.api.nvim_create_autocmd("BufDelete", {
+    group = group,
+    callback = function(args)
+      require("tabi.extmarks").clear(args.buf)
     end,
   })
 end
