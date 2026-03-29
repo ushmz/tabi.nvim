@@ -5,6 +5,7 @@ local M = {}
 ---@field storage? TabiStorageConfig
 ---@field ui? TabiUIConfig
 ---@field keymaps? TabiKeymapsConfig
+---@field show_default_notes? boolean
 
 ---@class TabiStorageConfig
 ---@field backend? 'local'|'global'
@@ -64,6 +65,7 @@ M.defaults = {
     retrace_end = "<Leader>tq",
     sessions = "<Leader>tl",
   },
+  show_default_notes = true, -- Always show default session notes in background
 }
 
 --- Current configuration
