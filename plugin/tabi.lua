@@ -372,10 +372,17 @@ end
 vim.api.nvim_create_autocmd("BufWritePre", {
   group = vim.api.nvim_create_augroup("TabiPositionSync", { clear = true }),
   callback = function(args)
-    if not tabi.state.current_session then
-      return
+    -- Prefer the explicitly active session; fall back to the default session
+    -- when show_default_notes is displaying notes without an active session
+    -- (e.g. after a Neovim restart).
+    local session_id = tabi.state.current_session
+    if not session_id then
+      if not require("tabi.config").get().show_default_notes then
+        return
+      end
+      session_id = "default"
     end
-    local session = session_module.load(tabi.state.current_session)
+    local session = session_module.load(session_id)
     if session then
       session_module.sync_positions_from_extmarks(session, args.buf)
     end

@@ -93,9 +93,19 @@ function M.refresh_buffer(bufnr, notes)
   M.clear_buffer(bufnr)
 
   local extmarks = require("tabi.extmarks")
+
+  -- Capture positions tracked by extmarks BEFORE clearing them.
+  -- These reflect any line shifts caused by edits since the last save,
+  -- so they must take priority over the (possibly stale) positions in the session file.
+  local tracked_positions = extmarks.get_positions(bufnr)
   extmarks.clear(bufnr)
 
   for _, note in ipairs(notes) do
+    local pos = tracked_positions[note.id]
+    if pos then
+      note.line = pos.line
+      note.end_line = pos.end_line
+    end
     M.display_note_as_virtual_line(bufnr, note)
     extmarks.track(bufnr, note)
   end
@@ -129,7 +139,8 @@ function M.setup_autocmds(session)
   vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
     group = group,
     callback = function(args)
-      M.update_for_session(args.buf, session)
+      local fresh = require("tabi.session").load(session.id)
+      M.update_for_session(args.buf, fresh or session)
     end,
   })
 
