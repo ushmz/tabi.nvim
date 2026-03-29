@@ -170,6 +170,10 @@ end
 function M.remove_note(session, note_id)
   for i, note in ipairs(session.notes) do
     if note.id == note_id then
+      local bufnr = vim.fn.bufnr(note.file)
+      if bufnr ~= -1 then
+        require("tabi.extmarks").untrack(bufnr, note_id)
+      end
       table.remove(session.notes, i)
       return M.save(session)
     end

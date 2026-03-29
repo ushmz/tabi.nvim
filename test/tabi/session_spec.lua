@@ -1,6 +1,7 @@
 local session = require("tabi.session")
 local note_module = require("tabi.note")
 local storage = require("tabi.storage")
+local extmarks = require("tabi.extmarks")
 
 describe("tabi.session", function()
   local temp_dir
@@ -243,6 +244,39 @@ describe("tabi.session", function()
       local result = session.remove_note(s, "nonexistent-id")
       assert.is_false(result)
     end)
+
+    it("should untrack extmark when the note's buffer is open", function()
+      -- Create a buffer associated with a real file so vim.fn.bufnr can find it
+      local temp_path = vim.fn.tempname() .. ".lua"
+      local f = io.open(temp_path, "w")
+      if f then
+        f:write("line 1\nline 2\nline 3\n")
+        f:close()
+      end
+      local bufnr = vim.fn.bufadd(temp_path)
+      vim.fn.bufload(bufnr)
+      local resolved_path = vim.api.nvim_buf_get_name(bufnr)
+
+      local s = session.create("test-remove-untrack")
+      local n = note_module.create(resolved_path, 2, "tracked note")
+      session.add_note(s, n)
+      extmarks.track(bufnr, n)
+
+      -- Confirm the extmark is registered before removal
+      local before = extmarks.get_positions(bufnr)
+      assert.is_not_nil(before[n.id])
+
+      session.remove_note(s, n.id)
+
+      -- Extmark should be cleared after the note is removed
+      local after = extmarks.get_positions(bufnr)
+      assert.is_nil(after[n.id])
+
+      -- Cleanup
+      extmarks.clear(bufnr)
+      vim.api.nvim_buf_delete(bufnr, { force = true })
+      os.remove(temp_path)
+    end)
   end)
 
   describe("update_note", function()
@@ -287,6 +321,145 @@ describe("tabi.session", function()
       local notes = session.get_notes_for_file(s, "/nonexistent.lua")
       assert.is_table(notes)
       assert.are.equal(0, #notes)
+    end)
+  end)
+
+  describe("sync_positions_from_extmarks", function()
+    local bufnr
+    local file_path
+
+    before_each(function()
+      -- Create a real temp file with known content
+      local temp_path = vim.fn.tempname() .. ".lua"
+      local lines = {}
+      for i = 1, 15 do
+        table.insert(lines, "line " .. i)
+      end
+      local f = io.open(temp_path, "w")
+      if f then
+        f:write(table.concat(lines, "\n") .. "\n")
+        f:close()
+      end
+
+      -- bufadd creates a real file-backed buffer; get_name may resolve symlinks (e.g. /var -> /private/var on macOS)
+      bufnr = vim.fn.bufadd(temp_path)
+      vim.fn.bufload(bufnr)
+      vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
+      -- Use the resolved path so note.file matches what nvim_buf_get_name returns
+      file_path = vim.api.nvim_buf_get_name(bufnr)
+    end)
+
+    after_each(function()
+      if vim.api.nvim_buf_is_valid(bufnr) then
+        extmarks.clear(bufnr)
+        vim.api.nvim_buf_delete(bufnr, { force = true })
+      end
+      os.remove(file_path)
+    end)
+
+    it("should update note positions after lines are inserted before the note", function()
+      local s = session.create("test-sync-insert")
+      local n = note_module.create(file_path, 5, "tracked note", 7)
+      session.add_note(s, n)
+
+      -- Register extmark to track the note position
+      extmarks.track(bufnr, n)
+
+      -- Insert 3 lines before the note (0-indexed row 1 = before line 2)
+      vim.api.nvim_buf_set_lines(bufnr, 1, 1, false, { "inserted 1", "inserted 2", "inserted 3" })
+
+      -- Sync positions from extmarks back into session
+      local changed = session.sync_positions_from_extmarks(s, bufnr)
+
+      assert.is_true(changed)
+      assert.are.equal(8, s.notes[1].line)
+      assert.are.equal(10, s.notes[1].end_line)
+    end)
+
+    it("should update note positions after lines are deleted before the note", function()
+      local s = session.create("test-sync-delete")
+      local n = note_module.create(file_path, 8, "tracked note", 10)
+      session.add_note(s, n)
+
+      extmarks.track(bufnr, n)
+
+      -- Delete 3 lines before the note (0-indexed rows 2-4 = lines 3-5)
+      vim.api.nvim_buf_set_lines(bufnr, 2, 5, false, {})
+
+      local changed = session.sync_positions_from_extmarks(s, bufnr)
+
+      assert.is_true(changed)
+      assert.are.equal(5, s.notes[1].line)
+      assert.are.equal(7, s.notes[1].end_line)
+    end)
+
+    it("should persist updated positions to storage", function()
+      local s = session.create("test-sync-persist")
+      local n = note_module.create(file_path, 5, "tracked note", 6)
+      session.add_note(s, n)
+
+      extmarks.track(bufnr, n)
+
+      -- Insert 2 lines before the note
+      vim.api.nvim_buf_set_lines(bufnr, 0, 0, false, { "prepend 1", "prepend 2" })
+
+      session.sync_positions_from_extmarks(s, bufnr)
+
+      local loaded = session.load(s.id)
+      assert.are.equal(7, loaded.notes[1].line)
+      assert.are.equal(8, loaded.notes[1].end_line)
+    end)
+
+    it("should return false and not save when positions have not changed", function()
+      local s = session.create("test-sync-no-change")
+      local n = note_module.create(file_path, 4, "stable note", 6)
+      session.add_note(s, n)
+
+      extmarks.track(bufnr, n)
+
+      -- No edits to the buffer; positions should match the current note positions
+      local changed = session.sync_positions_from_extmarks(s, bufnr)
+
+      assert.is_false(changed)
+      -- Positions should remain unchanged
+      assert.are.equal(4, s.notes[1].line)
+      assert.are.equal(6, s.notes[1].end_line)
+    end)
+
+    it("should only update notes belonging to the given buffer's file", function()
+      local s = session.create("test-sync-filter")
+      local n_same = note_module.create(file_path, 5, "same file note", 6)
+      local n_other = note_module.create("/other/file.lua", 5, "other file note", 6)
+      session.add_note(s, n_same)
+      session.add_note(s, n_other)
+
+      extmarks.track(bufnr, n_same)
+
+      -- Insert 2 lines before both notes' positions
+      vim.api.nvim_buf_set_lines(bufnr, 0, 0, false, { "prepend 1", "prepend 2" })
+
+      session.sync_positions_from_extmarks(s, bufnr)
+
+      -- n_same should be updated
+      local same = nil
+      local other = nil
+      for _, note in ipairs(s.notes) do
+        if note.id == n_same.id then
+          same = note
+        elseif note.id == n_other.id then
+          other = note
+        end
+      end
+
+      assert.are.equal(7, same.line)
+      -- n_other is in a different file and should not be changed
+      assert.are.equal(5, other.line)
+    end)
+
+    it("should return false for an invalid buffer", function()
+      local s = session.create("test-sync-invalid-buf")
+      local changed = session.sync_positions_from_extmarks(s, 99999)
+      assert.is_false(changed)
     end)
   end)
 
