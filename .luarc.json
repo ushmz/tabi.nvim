@@ -4,6 +4,17 @@
     "version": "LuaJIT"
   },
   "workspace": {
-    "library": ["lua", "$VIMRUNTIME", "${3rd}/luv/library"]
+    "library": [
+      "lua",
+      "$VIMRUNTIME",
+      "${3rd}/luv/library",
+      "${3rd}/busted/library",
+      "${3rd}/luassert/library"
+    ]
+  },
+  "diagnostics": {
+    "globals": [
+      "vim",
+    ]
   }
 }
