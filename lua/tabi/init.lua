@@ -76,7 +76,8 @@ function M._setup_default_session_display()
     callback = function(args)
       -- Only show when no named session or retrace is active
       if not M.state.current_session and not require("tabi.retrace").is_active() then
-        display.update_for_session(args.buf, default_session)
+        local fresh = session_module.load("default")
+        display.update_for_session(args.buf, fresh or default_session)
       end
     end,
   })

@@ -170,6 +170,10 @@ end
 function M.remove_note(session, note_id)
   for i, note in ipairs(session.notes) do
     if note.id == note_id then
+      local bufnr = vim.fn.bufnr(note.file)
+      if bufnr ~= -1 then
+        require("tabi.extmarks").untrack(bufnr, note_id)
+      end
       table.remove(session.notes, i)
       return M.save(session)
     end
@@ -204,6 +208,44 @@ function M.get_notes_for_file(session, file_path)
     end
   end
   return notes
+end
+
+--- Sync note positions from extmarks for notes belonging to a specific buffer.
+--- Should be called before saving so that line numbers reflect the current state
+--- of the buffer after edits.
+---@param session SessionData
+---@param bufnr number
+---@return boolean changed Whether any positions were updated
+function M.sync_positions_from_extmarks(session, bufnr)
+  if not vim.api.nvim_buf_is_valid(bufnr) then
+    return false
+  end
+
+  local file_path = vim.api.nvim_buf_get_name(bufnr)
+  if file_path == "" then
+    return false
+  end
+
+  local extmarks = require("tabi.extmarks")
+  local positions = extmarks.get_positions(bufnr)
+  local changed = false
+
+  for _, note in ipairs(session.notes) do
+    if note.file == file_path and positions[note.id] then
+      local pos = positions[note.id]
+      if note.line ~= pos.line or note.end_line ~= pos.end_line then
+        note.line = pos.line
+        note.end_line = pos.end_line
+        changed = true
+      end
+    end
+  end
+
+  if changed then
+    M.save(session)
+  end
+
+  return changed
 end
 
 --- Get note at specific line
