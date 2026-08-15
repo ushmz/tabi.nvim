@@ -9,8 +9,8 @@ function M.get_selector()
   local selector_type = config.get().ui.selector
   if selector_type == "telescope" then
     return require("tabi.ui.selector.telescope")
-  elseif selector_type == "float" then
-    return require("tabi.ui.selector.float")
+  elseif selector_type == "mini" then
+    return require("tabi.ui.selector.mini")
   else
     return require("tabi.ui.selector.native")
   end

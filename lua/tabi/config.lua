@@ -21,7 +21,7 @@ local M = {}
 ---@field sessions? string|false
 
 ---@class TabiUIConfig
----@field selector? 'native'|'telescope'|'float'
+---@field selector? 'native'|'telescope'|'mini'
 ---@field note_preview_length? number
 ---@field use_icons? boolean
 ---@field float_config? TabiFloatConfig
@@ -42,7 +42,7 @@ M.defaults = {
     backend = "local", -- 'local' (.git/tabi/) or 'global' (XDG_DATA_HOME)
   },
   ui = {
-    selector = "native", -- 'native', 'telescope', or 'float'
+    selector = "native", -- 'native', 'telescope', or 'mini'
     note_preview_length = 30,
     use_icons = true,
     float_config = {

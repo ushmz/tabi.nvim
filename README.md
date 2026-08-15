@@ -46,7 +46,7 @@ require('tabi').setup({
     backend = 'local', -- 'local' (.git/tabi/) or 'global' (XDG_DATA_HOME/tabi/)
   },
   ui = {
-    selector = 'native', -- 'native', 'telescope', or 'float'
+    selector = 'native', -- 'native', 'telescope', or 'mini' (mini.pick)
     note_preview_length = 30, -- Characters to show in virtual text
     use_icons = true, -- Show icons in sign column
     float_config = {
@@ -76,8 +76,8 @@ You can override individual keymaps or disable them by setting to `false`:
 require('tabi').setup({
   keymaps = {
     note = '<Leader>an',  -- Custom key for note
-    next = ']n',          -- Custom key for next
-    prev = '[n',          -- Custom key for prev
+    retrace = ']n',       -- Custom key for retrace
+    retrace_end = '[n',   -- Custom key for retrace end
     start = false,        -- Disable start keymap
   },
 })
@@ -105,7 +105,7 @@ require('tabi').setup({
 | `<Leader>tq` | Normal | `:Tabi retrace end` | Quit retrace mode |
 | `<Leader>tl` | Normal | `:Tabi sessions` | List all sessions |
 
-**Note**: In retrace mode, use Neovim's location list commands (`:lnext`, `:lprev`) to navigate between notes.
+**Note**: In retrace mode, use `:Tabi next` / `:Tabi prev` (or Neovim's location list commands `:lnext` / `:lprev`, since retrace is backed by the location list) to navigate between notes.
 
 ## Usage
 
@@ -136,7 +136,7 @@ require('tabi').setup({
    ```vim
    :Tabi retrace my-reading-session
    ```
-   - Navigate through notes with `:lnext` and `:lprev` (location list commands)
+   - Navigate through notes with `:Tabi next` and `:Tabi prev` (or `:lnext` / `:lprev`, since retrace is backed by the location list)
    - Exit retrace mode with `:Tabi retrace end`
 
 ### Commands
@@ -164,7 +164,7 @@ require('tabi').setup({
 | Command | Description |
 |---------|-------------|
 | `:Tabi retrace [name]` | Start replaying a session |
-| `:lnext` / `:lprev` | Navigate through notes (location list) |
+| `:Tabi next` / `:Tabi prev` | Navigate through notes (also: `:lnext` / `:lprev`) |
 | `:Tabi retrace end` | Exit retrace mode |
 
 ### Anonymous Sessions
@@ -199,7 +199,7 @@ This is useful for personal notes across multiple projects.
   - `:w` - Save and close
 
 - **Integrations**:
-  - Session selector integrates with [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) if configured
+  - Session selector integrates with [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) (`selector = 'telescope'`) or [mini.pick](https://github.com/echasnovski/mini.pick) (`selector = 'mini'`) if configured. Without either, `selector = 'native'` (`vim.ui.select`) is used and requires no extra dependency.
 
 ## Development
 

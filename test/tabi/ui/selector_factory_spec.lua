@@ -16,7 +16,7 @@ describe("tabi.ui.selector factory", function()
     -- Clear cached requires to ensure fresh loads
     package.loaded["tabi.ui.selector.native"] = nil
     package.loaded["tabi.ui.selector.telescope"] = nil
-    package.loaded["tabi.ui.selector.float"] = nil
+    package.loaded["tabi.ui.selector.mini"] = nil
   end)
 
   describe("get_selector", function()
@@ -40,14 +40,14 @@ describe("tabi.ui.selector factory", function()
       assert.are.equal(telescope, selector)
     end)
 
-    it("should return float selector when ui.selector is 'float'", function()
-      config.options.ui.selector = "float"
+    it("should return mini selector when ui.selector is 'mini'", function()
+      config.options.ui.selector = "mini"
 
       local selector = selector_factory.get_selector()
 
-      -- Verify it's the float module
-      local float = require("tabi.ui.selector.float")
-      assert.are.equal(float, selector)
+      -- Verify it's the mini module
+      local mini = require("tabi.ui.selector.mini")
+      assert.are.equal(mini, selector)
     end)
 
     it("should default to native selector when ui.selector is invalid", function()
