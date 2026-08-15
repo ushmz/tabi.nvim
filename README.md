@@ -54,6 +54,11 @@ require('tabi').setup({
       height = 10,
       border = 'rounded',
     },
+    mini = {
+      -- Passed through as-is into MiniPick.start() (e.g. `window`, `mappings`).
+      -- `source` is always controlled by tabi.nvim and cannot be overridden here.
+      opts = {},
+    },
   },
   keymaps = {
     enabled = true, -- Set to false to disable all default keymaps

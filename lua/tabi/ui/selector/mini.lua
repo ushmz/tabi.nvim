@@ -2,6 +2,7 @@
 local M = {}
 
 local session_module = require("tabi.session")
+local config = require("tabi.config")
 
 --- Select a session using mini.pick (mini.nvim)
 ---@param on_select function Callback with selected session
@@ -37,7 +38,13 @@ function M.select_session(on_select, opts)
     })
   end
 
-  local chosen = _G.MiniPick.start({
+  -- Let users pass through arbitrary MiniPick.start() options (e.g. `window`,
+  -- `mappings`). `source` is always controlled by tabi.nvim and cannot be
+  -- overridden this way.
+  local user_opts = vim.deepcopy(config.get().ui.mini.opts or {})
+  user_opts.source = nil
+
+  local start_opts = vim.tbl_deep_extend("force", user_opts, {
     source = {
       items = items,
       name = "Sessions",
@@ -73,6 +80,8 @@ function M.select_session(on_select, opts)
       end,
     },
   })
+
+  local chosen = _G.MiniPick.start(start_opts)
 
   if chosen then
     vim.schedule(function()

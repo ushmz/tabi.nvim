@@ -26,6 +26,7 @@ local M = {}
 ---@field use_icons? boolean
 ---@field float_config? TabiFloatConfig
 ---@field telescope? TabiTelescopeConfig
+---@field mini? TabiMiniConfig
 
 ---@class TabiFloatConfig
 ---@field width? number
@@ -35,6 +36,9 @@ local M = {}
 ---@class TabiTelescopeConfig
 ---@field theme? string|nil
 ---@field layout_config? table
+
+---@class TabiMiniConfig
+---@field opts? table Raw options merged into the table passed to MiniPick.start() (e.g. `window`, `mappings`). The `source` key is always controlled by tabi.nvim and cannot be overridden.
 
 --- Default configuration
 M.defaults = {
@@ -53,6 +57,9 @@ M.defaults = {
     telescope = {
       theme = nil,
       layout_config = {},
+    },
+    mini = {
+      opts = {},
     },
   },
   keymaps = {

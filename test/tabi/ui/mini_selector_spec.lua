@@ -1,12 +1,14 @@
 local mini_selector = require("tabi.ui.selector.mini")
 local session_module = require("tabi.session")
 local storage = require("tabi.storage")
+local config = require("tabi.config")
 
 describe("tabi.ui.selector.mini", function()
   local temp_dir
   local original_backend
   local original_notify
   local original_minipick
+  local original_config
 
   before_each(function()
     -- Create temporary directory for test storage
@@ -69,6 +71,9 @@ describe("tabi.ui.selector.mini", function()
     -- Save original global MiniPick
     original_minipick = _G.MiniPick
     _G.MiniPick = nil
+
+    -- Save original config
+    original_config = vim.deepcopy(config.options)
   end)
 
   after_each(function()
@@ -80,6 +85,9 @@ describe("tabi.ui.selector.mini", function()
 
     -- Restore original global MiniPick
     _G.MiniPick = original_minipick
+
+    -- Restore original config
+    config.options = original_config
 
     -- Clean up temporary directory
     if vim.fn.isdirectory(temp_dir) == 1 then
@@ -242,6 +250,30 @@ describe("tabi.ui.selector.mini", function()
 
         local choose = mock_start.last_opts.source.choose
         assert.is_false(choose({}))
+      end)
+
+      it("should pass through ui.mini.opts to MiniPick.start", function()
+        session_module.create("test")
+        config.options.ui.mini.opts = {
+          window = { config = { width = 80 } },
+          mappings = { choose = "<CR>" },
+        }
+
+        mini_selector.select_session(function() end)
+
+        assert.are.equal(80, mock_start.last_opts.window.config.width)
+        assert.are.equal("<CR>", mock_start.last_opts.mappings.choose)
+      end)
+
+      it("should not allow ui.mini.opts to override the source", function()
+        session_module.create("test")
+        config.options.ui.mini.opts = {
+          source = { name = "Hijacked" },
+        }
+
+        mini_selector.select_session(function() end)
+
+        assert.are.equal("Sessions", mock_start.last_opts.source.name)
       end)
     end)
   end)

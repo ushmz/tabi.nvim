@@ -66,6 +66,20 @@ describe("tabi.config", function()
       assert.is_false(opts.ui.use_icons)
       assert.are.equal("dropdown", opts.ui.telescope.theme)
     end)
+
+    it("should merge mini.opts", function()
+      config.setup({
+        ui = {
+          mini = {
+            opts = {
+              window = { config = { width = 80 } },
+            },
+          },
+        },
+      })
+      local opts = config.get()
+      assert.are.equal(80, opts.ui.mini.opts.window.config.width)
+    end)
   end)
 
   describe("get", function()
@@ -95,6 +109,7 @@ describe("tabi.config", function()
       assert.are.equal("rounded", opts.ui.float_config.border)
       assert.is_nil(opts.ui.telescope.theme)
       assert.is_table(opts.ui.telescope.layout_config)
+      assert.is_table(opts.ui.mini.opts)
     end)
   end)
 
@@ -122,6 +137,11 @@ describe("tabi.config", function()
       assert.is_table(config.defaults.ui.telescope)
       assert.is_nil(config.defaults.ui.telescope.theme)
       assert.is_table(config.defaults.ui.telescope.layout_config)
+    end)
+
+    it("should have mini configuration", function()
+      assert.is_table(config.defaults.ui.mini)
+      assert.is_table(config.defaults.ui.mini.opts)
     end)
 
     it("should have show_default_notes enabled by default", function()
