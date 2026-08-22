@@ -7,6 +7,7 @@ local display = require("tabi.ui.display")
 local retrace = require("tabi.retrace")
 local storage = require("tabi.storage")
 local config = require("tabi.config")
+local extmarks_module = require("tabi.extmarks")
 
 describe("integration: retrace flow", function()
   local temp_dir
@@ -446,6 +447,58 @@ describe("integration: retrace flow", function()
       local state_after = retrace.get_state()
       assert.are.equal(session.id, state_after.session.id)
       assert.are.equal(2, #state_after.session.notes)
+
+      retrace.stop()
+    end)
+  end)
+
+  describe("position tracking during retrace", function()
+    it("should track extmark positions for notes displayed via retrace", function()
+      local session = {
+        id = "retrace-position-tracking",
+        name = "Retrace Position Tracking",
+        created_at = "2025-01-01T00:00:00Z",
+        updated_at = "2025-01-01T00:00:00Z",
+        notes = {
+          note_module.create(temp_files[1], 2, "Note in file 1"),
+        },
+      }
+
+      retrace.start(session)
+
+      local bufnr = vim.fn.bufnr(temp_files[1])
+      assert.is_true(bufnr > 0)
+
+      local positions = extmarks_module.get_positions(bufnr)
+      assert.is_not_nil(positions[session.notes[1].id])
+      assert.are.equal(2, positions[session.notes[1].id].line)
+
+      retrace.stop()
+    end)
+
+    it("should sync note position after editing a file shown during retrace", function()
+      local session = {
+        id = "retrace-position-sync",
+        name = "Retrace Position Sync",
+        created_at = "2025-01-01T00:00:00Z",
+        updated_at = "2025-01-01T00:00:00Z",
+        notes = {
+          note_module.create(temp_files[1], 2, "Note in file 1"),
+        },
+      }
+
+      retrace.start(session)
+
+      local bufnr = vim.fn.bufnr(temp_files[1])
+
+      -- Insert a line above the noted line, shifting it down by one, as if
+      -- the user edited the file while retrace mode was showing it.
+      vim.api.nvim_buf_set_lines(bufnr, 0, 0, false, { "-- inserted line" })
+
+      -- This is what the BufWritePre autocmd in plugin/tabi.lua does.
+      local changed = session_module.sync_positions_from_extmarks(session, bufnr)
+      assert.is_true(changed)
+      assert.are.equal(3, session.notes[1].line)
 
       retrace.stop()
     end)

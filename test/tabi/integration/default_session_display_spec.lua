@@ -8,6 +8,7 @@ local display = require("tabi.ui.display")
 local retrace = require("tabi.retrace")
 local storage = require("tabi.storage")
 local config = require("tabi.config")
+local extmarks = require("tabi.extmarks")
 
 describe("integration: default session display", function()
   local temp_dir
@@ -161,6 +162,29 @@ describe("integration: default session display", function()
       -- Should setup autocmds
       local autocmds = vim.api.nvim_get_autocmds({ group = "TabiDefaultSession" })
       assert.is_true(#autocmds > 0)
+    end)
+
+    it("should track extmark positions for notes shown in the background", function()
+      local note = note_module.create(test_file, 1, "Test note", 1)
+      local default_session = {
+        id = "default",
+        name = "default",
+        created_at = "2024-01-01T00:00:00Z",
+        updated_at = "2024-01-01T00:00:00Z",
+        branch = nil,
+        notes = { note },
+      }
+      storage.backend.save_session(default_session)
+
+      config.setup({ show_default_notes = true })
+      tabi._setup_default_session_display()
+
+      local bufnr = vim.fn.bufnr(test_file)
+      assert.is_true(bufnr > 0)
+
+      local positions = extmarks.get_positions(bufnr)
+      assert.is_not_nil(positions[note.id])
+      assert.are.equal(1, positions[note.id].line)
     end)
 
     it("should not display when show_default_notes is false", function()

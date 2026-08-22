@@ -170,7 +170,7 @@ end
 function M.remove_note(session, note_id)
   for i, note in ipairs(session.notes) do
     if note.id == note_id then
-      local bufnr = vim.fn.bufnr(note.file)
+      local bufnr = utils.find_bufnr(note.file)
       if bufnr ~= -1 then
         require("tabi.extmarks").untrack(bufnr, note_id)
       end
@@ -203,7 +203,7 @@ end
 function M.get_notes_for_file(session, file_path)
   local notes = {}
   for _, note in ipairs(session.notes) do
-    if note.file == file_path then
+    if utils.paths_equal(note.file, file_path) then
       table.insert(notes, note)
     end
   end
@@ -231,7 +231,7 @@ function M.sync_positions_from_extmarks(session, bufnr)
   local changed = false
 
   for _, note in ipairs(session.notes) do
-    if note.file == file_path and positions[note.id] then
+    if utils.paths_equal(note.file, file_path) and positions[note.id] then
       local pos = positions[note.id]
       if note.line ~= pos.line or note.end_line ~= pos.end_line then
         note.line = pos.line
@@ -255,7 +255,7 @@ end
 ---@return NoteData|nil
 function M.get_note_at_line(session, file_path, line)
   for _, note in ipairs(session.notes) do
-    if note.file == file_path then
+    if utils.paths_equal(note.file, file_path) then
       local note_end_line = note.end_line or note.line
       if line >= note.line and line <= note_end_line then
         return note
