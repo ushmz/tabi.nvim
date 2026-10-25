@@ -3,20 +3,32 @@ local config = require("tabi.config")
 
 describe("tabi.ui.selector factory", function()
   local original_config
+  local original_notify
+  local notifications
 
   before_each(function()
     -- Save original config
     original_config = vim.deepcopy(config.options)
+
+    -- Capture notifications
+    original_notify = vim.notify
+    notifications = {}
+    vim.notify = function(msg, level)
+      table.insert(notifications, { msg = msg, level = level })
+    end
   end)
 
   after_each(function()
     -- Restore original config
     config.options = original_config
 
+    -- Restore original notify
+    vim.notify = original_notify
+
     -- Clear cached requires to ensure fresh loads
     package.loaded["tabi.ui.selector.native"] = nil
     package.loaded["tabi.ui.selector.telescope"] = nil
-    package.loaded["tabi.ui.selector.float"] = nil
+    package.loaded["tabi.ui.selector.mini"] = nil
   end)
 
   describe("get_selector", function()
@@ -40,14 +52,14 @@ describe("tabi.ui.selector factory", function()
       assert.are.equal(telescope, selector)
     end)
 
-    it("should return float selector when ui.selector is 'float'", function()
-      config.options.ui.selector = "float"
+    it("should return mini selector when ui.selector is 'mini'", function()
+      config.options.ui.selector = "mini"
 
       local selector = selector_factory.get_selector()
 
-      -- Verify it's the float module
-      local float = require("tabi.ui.selector.float")
-      assert.are.equal(float, selector)
+      -- Verify it's the mini module
+      local mini = require("tabi.ui.selector.mini")
+      assert.are.equal(mini, selector)
     end)
 
     it("should default to native selector when ui.selector is invalid", function()
@@ -60,6 +72,25 @@ describe("tabi.ui.selector factory", function()
       assert.are.equal(native, selector)
     end)
 
+    it("should warn when ui.selector is invalid", function()
+      config.options.ui.selector = "float"
+
+      selector_factory.get_selector()
+
+      assert.are.equal(1, #notifications)
+      assert.is_truthy(notifications[1].msg:find("Unknown ui.selector 'float'", 1, true))
+      assert.are.equal(vim.log.levels.WARN, notifications[1].level)
+    end)
+
+    it("should not warn for valid selectors", function()
+      for _, selector_type in ipairs({ "native", "telescope", "mini" }) do
+        config.options.ui.selector = selector_type
+        selector_factory.get_selector()
+      end
+
+      assert.are.equal(0, #notifications)
+    end)
+
     it("should default to native selector when ui.selector is nil", function()
       config.options.ui.selector = nil
 
@@ -68,6 +99,7 @@ describe("tabi.ui.selector factory", function()
       -- Should fallback to native
       local native = require("tabi.ui.selector.native")
       assert.are.equal(native, selector)
+      assert.are.equal(0, #notifications)
     end)
 
     it("should return selector with select_session function", function()

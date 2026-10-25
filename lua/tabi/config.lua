@@ -21,11 +21,12 @@ local M = {}
 ---@field sessions? string|false
 
 ---@class TabiUIConfig
----@field selector? 'native'|'telescope'|'float'
+---@field selector? 'native'|'telescope'|'mini'
 ---@field note_preview_length? number
 ---@field use_icons? boolean
 ---@field float_config? TabiFloatConfig
 ---@field telescope? TabiTelescopeConfig
+---@field mini? TabiMiniConfig
 
 ---@class TabiFloatConfig
 ---@field width? number
@@ -36,13 +37,16 @@ local M = {}
 ---@field theme? string|nil
 ---@field layout_config? table
 
+---@class TabiMiniConfig
+---@field opts? table Raw options merged into the table passed to MiniPick.start() (e.g. `window`, `mappings`). The `source` key is always controlled by tabi.nvim and cannot be overridden.
+
 --- Default configuration
 M.defaults = {
   storage = {
     backend = "local", -- 'local' (.git/tabi/) or 'global' (XDG_DATA_HOME)
   },
   ui = {
-    selector = "native", -- 'native', 'telescope', or 'float'
+    selector = "native", -- 'native', 'telescope', or 'mini'
     note_preview_length = 30,
     use_icons = true,
     float_config = {
@@ -53,6 +57,9 @@ M.defaults = {
     telescope = {
       theme = nil,
       layout_config = {},
+    },
+    mini = {
+      opts = {},
     },
   },
   keymaps = {

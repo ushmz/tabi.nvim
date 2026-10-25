@@ -3,6 +3,8 @@ local M = {}
 
 local session_module = require("tabi.session")
 local config = require("tabi.config")
+local selector_util = require("tabi.ui.selector.util")
+local utils = require("tabi.utils")
 
 --- Select a session using telescope.nvim
 ---@param on_select function Callback with selected session
@@ -59,29 +61,7 @@ function M.select_session(on_select, opts)
   local previewer = previewers.new_buffer_previewer({
     title = "Session Notes",
     define_preview = function(self, entry)
-      local session = entry.session
-      local lines = {
-        "Session: " .. session.name,
-        "ID: " .. session.id,
-        "Branch: " .. (session.branch or "N/A"),
-        "Created: " .. session.created_at,
-        "Updated: " .. session.updated_at,
-        "Notes: " .. #session.notes,
-        "",
-        "--- Notes ---",
-      }
-
-      for i, note in ipairs(session.notes) do
-        table.insert(lines, string.format("%d. %s:%d", i, note.file, note.line))
-        -- Add first line of note content
-        local first_line = note.content:match("^[^\n]+") or note.content
-        if #first_line > 60 then
-          first_line = first_line:sub(1, 57) .. "..."
-        end
-        table.insert(lines, "   " .. first_line)
-        table.insert(lines, "")
-      end
-
+      local lines = selector_util.build_preview_lines(entry.session)
       vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
     end,
   })
@@ -92,7 +72,7 @@ function M.select_session(on_select, opts)
     finder = finders.new_table({
       results = sessions,
       entry_maker = function(session)
-        local date = vim.fn.strftime("%Y-%m-%d", vim.fn.strptime("%Y-%m-%dT%H:%M:%SZ", session.updated_at))
+        local date = utils.format_timestamp(session.updated_at, "%Y-%m-%d")
         return {
           value = session,
           display = make_display,
