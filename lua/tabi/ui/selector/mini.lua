@@ -50,8 +50,9 @@ function M.select_session(on_select, opts)
     source = {
       items = items,
       name = "Sessions",
-      -- Stop the picker as soon as an item is chosen instead of allowing
-      -- multi-select style continuation.
+      -- The chosen item is handled via MiniPick.start()'s return value. Override
+      -- the default choose, which would print the whole item (our items have no
+      -- path or buffer). Returning false stops the picker.
       choose = function(_)
         return false
       end,

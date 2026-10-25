@@ -243,13 +243,24 @@ describe("tabi.ui.selector.mini", function()
         end)
       end)
 
-      it("should instruct the picker to stop on choose", function()
+      it("should override default choose with a silent one that stops the picker", function()
         session_module.create("test")
+        local original_print = _G.print
+        local printed = false
+        _G.print = function()
+          printed = true
+        end
 
         mini_selector.select_session(function() end)
 
         local choose = mock_start.last_opts.source.choose
-        assert.is_false(choose({}))
+        local item = mock_start.last_opts.source.items[1]
+        local ok, result = pcall(choose, item)
+        _G.print = original_print
+
+        assert.is_true(ok)
+        assert.is_falsy(result)
+        assert.is_false(printed)
       end)
 
       it("should pass through ui.mini.opts to MiniPick.start", function()
