@@ -110,12 +110,12 @@ describe("tabi.ui.selector.mini", function()
       assert.is_true(notify_called)
     end)
 
-    it("should notify error when mini.pick is not available", function()
+    it("should notify error when mini.pick is not set up", function()
       session_module.create("test")
 
       local notify_called = false
       vim.notify = function(msg, level)
-        if msg:find("mini.pick is not installed") then
+        if msg:find("mini.pick is not set up", 1, true) then
           notify_called = true
           assert.are.equal(vim.log.levels.ERROR, level)
         end

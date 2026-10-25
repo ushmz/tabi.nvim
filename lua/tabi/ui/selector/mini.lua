@@ -17,8 +17,10 @@ function M.select_session(on_select, opts)
     return
   end
 
+  -- Checking the global (rather than `require`) ensures the user explicitly set
+  -- up mini.pick, as recommended in `:h MiniPick-in-other-plugins`.
   if _G.MiniPick == nil then
-    vim.notify("Tabi: mini.pick is not installed", vim.log.levels.ERROR)
+    vim.notify("Tabi: mini.pick is not set up (call `require('mini.pick').setup()`)", vim.log.levels.ERROR)
     return
   end
 
