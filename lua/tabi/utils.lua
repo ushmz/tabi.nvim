@@ -17,6 +17,14 @@ function M.timestamp()
   return os.date("!%Y-%m-%dT%H:%M:%SZ")
 end
 
+--- Format an ISO 8601 timestamp (as produced by `timestamp()`) for display
+---@param iso string ISO 8601 timestamp
+---@param fmt string strftime-style format
+---@return string
+function M.format_timestamp(iso, fmt)
+  return vim.fn.strftime(fmt, vim.fn.strptime("%Y-%m-%dT%H:%M:%SZ", iso))
+end
+
 --- Get current git branch
 ---@return string|nil
 function M.get_git_branch()

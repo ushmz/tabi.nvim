@@ -14,6 +14,7 @@ local float = require("tabi.ui.float")
 local display = require("tabi.ui.display")
 local retrace = require("tabi.retrace")
 local selector_factory = require("tabi.ui.selector")
+local utils = require("tabi.utils")
 
 -- Initialize display
 display.init()
@@ -286,7 +287,7 @@ function commands.sessions()
       i,
       session.name,
       #session.notes,
-      vim.fn.strftime("%Y-%m-%d %H:%M", vim.fn.strptime("%Y-%m-%dT%H:%M:%SZ", session.updated_at)),
+      utils.format_timestamp(session.updated_at, "%Y-%m-%d %H:%M"),
       session.branch or "N/A"
     )
     table.insert(lines, line)

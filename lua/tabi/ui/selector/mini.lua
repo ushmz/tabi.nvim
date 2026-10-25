@@ -3,6 +3,8 @@ local M = {}
 
 local session_module = require("tabi.session")
 local config = require("tabi.config")
+local selector_util = require("tabi.ui.selector.util")
+local utils = require("tabi.utils")
 
 --- Select a session using mini.pick (mini.nvim)
 ---@param on_select function Callback with selected session
@@ -27,7 +29,7 @@ function M.select_session(on_select, opts)
   -- Build picker items. mini.pick matches/displays table items via their `text` field.
   local items = {}
   for _, session in ipairs(sessions) do
-    local date = vim.fn.strftime("%Y-%m-%d", vim.fn.strptime("%Y-%m-%dT%H:%M:%SZ", session.updated_at))
+    local date = utils.format_timestamp(session.updated_at, "%Y-%m-%d")
     table.insert(items, {
       text = string.format(
         "%s (%d notes, %s, branch: %s)",
@@ -57,28 +59,7 @@ function M.select_session(on_select, opts)
         return false
       end,
       preview = function(buf_id, item)
-        local session = item.session
-        local lines = {
-          "Session: " .. session.name,
-          "ID: " .. session.id,
-          "Branch: " .. (session.branch or "N/A"),
-          "Created: " .. session.created_at,
-          "Updated: " .. session.updated_at,
-          "Notes: " .. #session.notes,
-          "",
-          "--- Notes ---",
-        }
-
-        for i, note in ipairs(session.notes) do
-          table.insert(lines, string.format("%d. %s:%d", i, note.file, note.line))
-          local first_line = note.content:match("^[^\n]+") or note.content
-          if #first_line > 60 then
-            first_line = first_line:sub(1, 57) .. "..."
-          end
-          table.insert(lines, "   " .. first_line)
-          table.insert(lines, "")
-        end
-
+        local lines = selector_util.build_preview_lines(item.session)
         vim.api.nvim_buf_set_lines(buf_id, 0, -1, false, lines)
       end,
     },

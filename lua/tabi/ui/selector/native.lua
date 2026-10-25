@@ -2,6 +2,7 @@
 local M = {}
 
 local session_module = require("tabi.session")
+local utils = require("tabi.utils")
 
 --- Select a session from list
 ---@param on_select function Callback with selected session
@@ -23,7 +24,7 @@ function M.select_session(on_select, opts)
       "%s (%d notes, %s)",
       session.name,
       #session.notes,
-      vim.fn.strftime("%Y-%m-%d", vim.fn.strptime("%Y-%m-%dT%H:%M:%SZ", session.updated_at))
+      utils.format_timestamp(session.updated_at, "%Y-%m-%d")
     )
     table.insert(items, item_text)
   end

@@ -33,6 +33,13 @@ describe("tabi.utils", function()
     end)
   end)
 
+  describe("format_timestamp", function()
+    it("should format with the given format", function()
+      local formatted = utils.format_timestamp("2024-03-10T12:00:00Z", "%Y-%m-%d")
+      assert.is_true(formatted:match("^%d%d%d%d%-%d%d%-%d%d$") ~= nil, "Unexpected format: " .. formatted)
+    end)
+  end)
+
   describe("relative_path", function()
     it("should calculate relative path from base", function()
       local base = "/home/user/project"
