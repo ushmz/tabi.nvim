@@ -476,6 +476,43 @@ describe("integration: retrace flow", function()
       retrace.stop()
     end)
 
+    it("should preserve tracking of another session's notes in the same buffer", function()
+      local active_note = note_module.create(temp_files[1], 3, "Active session note")
+      local active_session = {
+        id = "active-session",
+        name = "Active Session",
+        created_at = "2025-01-01T00:00:00Z",
+        updated_at = "2025-01-01T00:00:00Z",
+        notes = { active_note },
+      }
+      local retraced_session = {
+        id = "retraced-session",
+        name = "Retraced Session",
+        created_at = "2025-01-01T00:00:00Z",
+        updated_at = "2025-01-01T00:00:00Z",
+        notes = {
+          note_module.create(temp_files[1], 1, "Retraced session note"),
+        },
+      }
+
+      -- The active session's notes are tracked, as BufEnter would do
+      local bufnr = vim.fn.bufadd(temp_files[1])
+      vim.fn.bufload(bufnr)
+      display.refresh_buffer(bufnr, active_session.notes)
+
+      retrace.start(retraced_session)
+
+      local positions = extmarks_module.get_positions(bufnr)
+      assert.is_not_nil(positions[active_note.id])
+      assert.is_not_nil(positions[retraced_session.notes[1].id])
+
+      -- Edits shift the active session's note too
+      vim.api.nvim_buf_set_lines(bufnr, 0, 0, false, { "-- inserted line" })
+      assert.are.equal(4, extmarks_module.get_positions(bufnr)[active_note.id].line)
+
+      retrace.stop()
+    end)
+
     it("should sync note position after editing a file shown during retrace", function()
       local session = {
         id = "retrace-position-sync",

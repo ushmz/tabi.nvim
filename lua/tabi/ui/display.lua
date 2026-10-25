@@ -95,11 +95,13 @@ function M.refresh_buffer(bufnr, notes)
 
   local extmarks = require("tabi.extmarks")
 
-  -- Capture positions tracked by extmarks BEFORE clearing them.
+  -- Capture positions tracked by extmarks BEFORE re-tracking.
   -- These reflect any line shifts caused by edits since the last save,
   -- so they must take priority over the (possibly stale) positions in the session file.
+  -- Only the given notes are re-tracked (track() replaces a note's own extmarks), so
+  -- tracking for other sessions' notes in this buffer (e.g. the active session while
+  -- retracing another one) is preserved.
   local tracked_positions = extmarks.get_positions(bufnr)
-  extmarks.clear(bufnr)
 
   for _, note in ipairs(notes) do
     local pos = tracked_positions[note.id]
