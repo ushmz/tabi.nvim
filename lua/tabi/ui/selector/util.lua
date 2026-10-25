@@ -18,8 +18,8 @@ function M.build_preview_lines(session)
 
   for i, note in ipairs(session.notes) do
     table.insert(lines, string.format("%d. %s:%d", i, note.file, note.line))
-    -- Add first line of note content
-    local first_line = note.content:match("^[^\n]+") or note.content
+    -- Add first non-empty line of note content (buffer lines must not contain newlines)
+    local first_line = note.content:match("[^\n]+") or ""
     -- Count characters rather than bytes so multibyte text is not cut mid-character
     if vim.fn.strchars(first_line) > 60 then
       first_line = vim.fn.strcharpart(first_line, 0, 57) .. "..."
