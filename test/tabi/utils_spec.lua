@@ -33,10 +33,37 @@ describe("tabi.utils", function()
     end)
   end)
 
+  describe("parse_timestamp", function()
+    it("should parse the Unix epoch", function()
+      assert.are.equal(0, utils.parse_timestamp("1970-01-01T00:00:00Z"))
+    end)
+
+    it("should interpret the timestamp as UTC", function()
+      assert.are.equal(1710074096, utils.parse_timestamp("2024-03-10T12:34:56Z"))
+      -- Leap day
+      assert.are.equal(1709251199, utils.parse_timestamp("2024-02-29T23:59:59Z"))
+    end)
+
+    it("should round-trip with timestamp()", function()
+      local before = os.time()
+      local parsed = utils.parse_timestamp(utils.timestamp())
+      assert.is_true(parsed >= before and parsed <= os.time())
+    end)
+
+    it("should return nil for invalid input", function()
+      assert.is_nil(utils.parse_timestamp("not a timestamp"))
+      assert.is_nil(utils.parse_timestamp("2024-03-10 12:34:56"))
+    end)
+  end)
+
   describe("format_timestamp", function()
-    it("should format with the given format", function()
-      local formatted = utils.format_timestamp("2024-03-10T12:00:00Z", "%Y-%m-%d")
-      assert.is_true(formatted:match("^%d%d%d%d%-%d%d%-%d%d$") ~= nil, "Unexpected format: " .. formatted)
+    it("should format in local time", function()
+      local formatted = utils.format_timestamp("2024-03-10T12:34:56Z", "%Y-%m-%d %H:%M:%S")
+      assert.are.equal(os.date("%Y-%m-%d %H:%M:%S", 1710074096), formatted)
+    end)
+
+    it("should return input unchanged when it cannot be parsed", function()
+      assert.are.equal("invalid", utils.format_timestamp("invalid", "%Y-%m-%d"))
     end)
   end)
 

@@ -17,12 +17,38 @@ function M.timestamp()
   return os.date("!%Y-%m-%dT%H:%M:%SZ")
 end
 
---- Format an ISO 8601 timestamp (as produced by `timestamp()`) for display
----@param iso string ISO 8601 timestamp
+--- Convert a UTC timestamp in ISO 8601 format to Unix epoch seconds
+--- (strptime()/os.time() would interpret it as local time)
+---@param iso string ISO 8601 timestamp in UTC (e.g. "2024-01-01T00:00:00Z")
+---@return integer|nil
+function M.parse_timestamp(iso)
+  local y, m, d, hour, min, sec = iso:match("^(%d+)-(%d+)-(%d+)T(%d+):(%d+):(%d+)Z$")
+  if not y then
+    return nil
+  end
+  y, m, d = tonumber(y), tonumber(m), tonumber(d)
+
+  -- Days since 1970-01-01 in the proleptic Gregorian calendar
+  y = m <= 2 and y - 1 or y
+  local era = math.floor(y / 400)
+  local yoe = y - era * 400
+  local doy = math.floor((153 * ((m + 9) % 12) + 2) / 5) + d - 1
+  local doe = yoe * 365 + math.floor(yoe / 4) - math.floor(yoe / 100) + doy
+  local days = era * 146097 + doe - 719468
+
+  return days * 86400 + tonumber(hour) * 3600 + tonumber(min) * 60 + tonumber(sec)
+end
+
+--- Format an ISO 8601 timestamp (as produced by `timestamp()`) in local time for display
+---@param iso string ISO 8601 timestamp in UTC
 ---@param fmt string strftime-style format
----@return string
+---@return string Formatted time, or `iso` unchanged if it cannot be parsed
 function M.format_timestamp(iso, fmt)
-  return vim.fn.strftime(fmt, vim.fn.strptime("%Y-%m-%dT%H:%M:%SZ", iso))
+  local epoch = M.parse_timestamp(iso)
+  if not epoch then
+    return iso
+  end
+  return os.date(fmt, epoch) --[[@as string]]
 end
 
 --- Get current git branch
