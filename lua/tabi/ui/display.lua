@@ -2,6 +2,7 @@
 local M = {}
 
 local config = require("tabi.config")
+local utils = require("tabi.utils")
 
 -- Namespace for virtual text and signs
 local ns = vim.api.nvim_create_namespace("tabi")
@@ -94,11 +95,13 @@ function M.refresh_buffer(bufnr, notes)
 
   local extmarks = require("tabi.extmarks")
 
-  -- Capture positions tracked by extmarks BEFORE clearing them.
+  -- Capture positions tracked by extmarks BEFORE re-tracking.
   -- These reflect any line shifts caused by edits since the last save,
   -- so they must take priority over the (possibly stale) positions in the session file.
+  -- Only the given notes are re-tracked (track() replaces a note's own extmarks), so
+  -- tracking for other sessions' notes in this buffer (e.g. the active session while
+  -- retracing another one) is preserved.
   local tracked_positions = extmarks.get_positions(bufnr)
-  extmarks.clear(bufnr)
 
   for _, note in ipairs(notes) do
     local pos = tracked_positions[note.id]
@@ -175,7 +178,10 @@ function M.display_all_session_notes(session)
     return
   end
 
-  -- Group notes by file (normalize paths to absolute)
+  -- Group notes by file (normalize paths to absolute). Buffer resolution
+  -- below still uses tabi.utils.find_bufnr/paths_equal for symlinked dirs
+  -- like macOS's /tmp -> /private/tmp, since loading the buffer itself
+  -- (bufload) resolves the name to its canonical form regardless.
   local notes_by_file = {}
   for _, note in ipairs(session.notes) do
     local abs_path = vim.fn.fnamemodify(note.file, ":p")
@@ -215,13 +221,9 @@ function M.display_all_session_notes(session)
         end)
       end
 
-      -- Clear existing displays for this buffer
-      M.clear_buffer(bufnr)
-
-      -- Display each note as virtual line
-      for _, note in ipairs(notes) do
-        M.display_note_as_virtual_line(bufnr, note)
-      end
+      -- Draw notes and (re-)establish extmark position tracking, same as the
+      -- per-buffer BufEnter path, so BufWritePre can sync positions here too.
+      M.refresh_buffer(bufnr, notes)
     end
   end
 end
@@ -242,7 +244,7 @@ function M.clear_all_session_notes(session)
 
   -- Clear displays for each file's buffer
   for file_path, _ in pairs(files) do
-    local bufnr = vim.fn.bufnr(file_path)
+    local bufnr = utils.find_bufnr(file_path)
     if bufnr > 0 and vim.api.nvim_buf_is_valid(bufnr) then
       M.clear_buffer(bufnr)
     end

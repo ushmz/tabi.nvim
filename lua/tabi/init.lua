@@ -83,6 +83,46 @@ function M._setup_default_session_display()
   })
 end
 
+--- Sync note positions from extmarks for a buffer about to be written (BufWritePre)
+---@param bufnr number
+function M.sync_positions_on_write(bufnr)
+  local session_module = require("tabi.session")
+  local retrace = require("tabi.retrace")
+  local synced_id = nil
+
+  -- The retrace session may not be the active session (e.g. `:Tabi retrace <name>`
+  -- without `:Tabi start`). Note operations during retrace save its in-memory copy
+  -- as-is, so keep that in step as well as the stored copy (whose positions may
+  -- still be stale even when the in-memory one was already updated on refresh).
+  local retrace_state = retrace.is_active() and retrace.get_state() or nil
+  if retrace_state then
+    session_module.sync_positions_from_extmarks(retrace_state.session, bufnr)
+    local stored = session_module.load(retrace_state.session.id)
+    if stored then
+      session_module.sync_positions_from_extmarks(stored, bufnr)
+    end
+    synced_id = retrace_state.session.id
+  end
+
+  -- Prefer the explicitly active session; fall back to the default session
+  -- when show_default_notes is displaying notes without an active session
+  -- (e.g. after a Neovim restart).
+  local session_id = M.state.current_session
+  if not session_id then
+    if not require("tabi.config").get().show_default_notes then
+      return
+    end
+    session_id = "default"
+  end
+  if session_id == synced_id then
+    return
+  end
+  local session = session_module.load(session_id)
+  if session then
+    session_module.sync_positions_from_extmarks(session, bufnr)
+  end
+end
+
 --- Clear default session display autocmds
 function M._clear_default_session_display()
   pcall(vim.api.nvim_del_augroup_by_name, "TabiDefaultSession")

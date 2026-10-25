@@ -7,6 +7,7 @@ local display = require("tabi.ui.display")
 local retrace = require("tabi.retrace")
 local storage = require("tabi.storage")
 local config = require("tabi.config")
+local extmarks_module = require("tabi.extmarks")
 
 describe("integration: retrace flow", function()
   local temp_dir
@@ -448,6 +449,169 @@ describe("integration: retrace flow", function()
       assert.are.equal(2, #state_after.session.notes)
 
       retrace.stop()
+    end)
+  end)
+
+  describe("position tracking during retrace", function()
+    it("should track extmark positions for notes displayed via retrace", function()
+      local session = {
+        id = "retrace-position-tracking",
+        name = "Retrace Position Tracking",
+        created_at = "2025-01-01T00:00:00Z",
+        updated_at = "2025-01-01T00:00:00Z",
+        notes = {
+          note_module.create(temp_files[1], 2, "Note in file 1"),
+        },
+      }
+
+      retrace.start(session)
+
+      local bufnr = vim.fn.bufnr(temp_files[1])
+      assert.is_true(bufnr > 0)
+
+      local positions = extmarks_module.get_positions(bufnr)
+      assert.is_not_nil(positions[session.notes[1].id])
+      assert.are.equal(2, positions[session.notes[1].id].line)
+
+      retrace.stop()
+    end)
+
+    it("should preserve tracking of another session's notes in the same buffer", function()
+      local active_note = note_module.create(temp_files[1], 3, "Active session note")
+      local active_session = {
+        id = "active-session",
+        name = "Active Session",
+        created_at = "2025-01-01T00:00:00Z",
+        updated_at = "2025-01-01T00:00:00Z",
+        notes = { active_note },
+      }
+      local retraced_session = {
+        id = "retraced-session",
+        name = "Retraced Session",
+        created_at = "2025-01-01T00:00:00Z",
+        updated_at = "2025-01-01T00:00:00Z",
+        notes = {
+          note_module.create(temp_files[1], 1, "Retraced session note"),
+        },
+      }
+
+      -- The active session's notes are tracked, as BufEnter would do
+      local bufnr = vim.fn.bufadd(temp_files[1])
+      vim.fn.bufload(bufnr)
+      display.refresh_buffer(bufnr, active_session.notes)
+
+      retrace.start(retraced_session)
+
+      local positions = extmarks_module.get_positions(bufnr)
+      assert.is_not_nil(positions[active_note.id])
+      assert.is_not_nil(positions[retraced_session.notes[1].id])
+
+      -- Edits shift the active session's note too
+      vim.api.nvim_buf_set_lines(bufnr, 0, 0, false, { "-- inserted line" })
+      assert.are.equal(4, extmarks_module.get_positions(bufnr)[active_note.id].line)
+
+      retrace.stop()
+    end)
+
+    it("should sync the retrace session on write when no session is active", function()
+      local tabi = require("tabi")
+      tabi.state.current_session = nil
+      local session = {
+        id = "retrace-position-sync",
+        name = "Retrace Position Sync",
+        created_at = "2025-01-01T00:00:00Z",
+        updated_at = "2025-01-01T00:00:00Z",
+        notes = {
+          note_module.create(temp_files[1], 2, "Note in file 1"),
+        },
+      }
+      session_module.save(session)
+
+      retrace.start(session)
+
+      local bufnr = vim.fn.bufnr(temp_files[1])
+
+      -- Insert a line above the noted line, shifting it down by one, as if
+      -- the user edited the file while retrace mode was showing it.
+      vim.api.nvim_buf_set_lines(bufnr, 0, 0, false, { "-- inserted line" })
+
+      -- Same handler as the BufWritePre autocmd in plugin/tabi.lua
+      tabi.sync_positions_on_write(bufnr)
+
+      assert.are.equal(3, session.notes[1].line)
+      assert.are.equal(3, session_module.load(session.id).notes[1].line)
+
+      retrace.stop()
+    end)
+
+    it("should sync the stored retrace session even if the in-memory one was already refreshed", function()
+      local tabi = require("tabi")
+      tabi.state.current_session = nil
+      local session = {
+        id = "retrace-position-sync-refreshed",
+        name = "Retrace Position Sync Refreshed",
+        created_at = "2025-01-01T00:00:00Z",
+        updated_at = "2025-01-01T00:00:00Z",
+        notes = {
+          note_module.create(temp_files[1], 2, "Note in file 1"),
+        },
+      }
+      session_module.save(session)
+
+      retrace.start(session)
+
+      local bufnr = vim.fn.bufnr(temp_files[1])
+      vim.api.nvim_buf_set_lines(bufnr, 0, 0, false, { "-- inserted line" })
+
+      -- Redrawing (e.g. after adding a note during retrace) updates the in-memory
+      -- positions from extmarks without saving them.
+      display.display_all_session_notes(session)
+      assert.are.equal(3, session.notes[1].line)
+
+      tabi.sync_positions_on_write(bufnr)
+
+      assert.are.equal(3, session_module.load(session.id).notes[1].line)
+
+      retrace.stop()
+    end)
+
+    it("should sync both the active session and the retrace session on write", function()
+      local tabi = require("tabi")
+      local active_note = note_module.create(temp_files[1], 3, "Active session note")
+      local active_session = {
+        id = "active-session-sync",
+        name = "Active Session Sync",
+        created_at = "2025-01-01T00:00:00Z",
+        updated_at = "2025-01-01T00:00:00Z",
+        notes = { active_note },
+      }
+      local retraced_session = {
+        id = "retraced-session-sync",
+        name = "Retraced Session Sync",
+        created_at = "2025-01-01T00:00:00Z",
+        updated_at = "2025-01-01T00:00:00Z",
+        notes = {
+          note_module.create(temp_files[1], 1, "Retraced session note"),
+        },
+      }
+      session_module.save(active_session)
+      session_module.save(retraced_session)
+      tabi.state.current_session = active_session.id
+
+      local bufnr = vim.fn.bufadd(temp_files[1])
+      vim.fn.bufload(bufnr)
+      display.refresh_buffer(bufnr, active_session.notes)
+
+      retrace.start(retraced_session)
+      vim.api.nvim_buf_set_lines(bufnr, 0, 0, false, { "-- inserted line" })
+
+      tabi.sync_positions_on_write(bufnr)
+
+      assert.are.equal(4, session_module.load(active_session.id).notes[1].line)
+      assert.are.equal(2, session_module.load(retraced_session.id).notes[1].line)
+
+      retrace.stop()
+      tabi.state.current_session = nil
     end)
   end)
 end)

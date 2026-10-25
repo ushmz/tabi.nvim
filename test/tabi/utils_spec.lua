@@ -78,6 +78,58 @@ describe("tabi.utils", function()
     end)
   end)
 
+  describe("paths_equal", function()
+    it("should return true for identical strings", function()
+      assert.is_true(utils.paths_equal("/foo/bar.lua", "/foo/bar.lua"))
+    end)
+
+    it("should return false for unrelated paths", function()
+      assert.is_false(utils.paths_equal("/foo/bar.lua", "/foo/baz.lua"))
+    end)
+
+    it("should treat a symlinked path and its resolved target as equal", function()
+      local dir = vim.fn.tempname()
+      vim.fn.mkdir(dir, "p")
+      local real_dir = dir .. "/real"
+      local link_dir = dir .. "/link"
+      vim.fn.mkdir(real_dir, "p")
+      vim.loop.fs_symlink(real_dir, link_dir)
+
+      local file = real_dir .. "/note.lua"
+      local f = io.open(file, "w")
+      f:write("-- test\n")
+      f:close()
+
+      local via_symlink = link_dir .. "/note.lua"
+      assert.is_true(utils.paths_equal(file, via_symlink))
+
+      vim.fn.delete(dir, "rf")
+    end)
+
+    it("should fall back to absolute-path comparison when a file no longer exists", function()
+      local missing_a = "/tmp/does-not-exist-a.lua"
+      local missing_b = "/tmp/does-not-exist-a.lua"
+      assert.is_true(utils.paths_equal(missing_a, missing_b))
+      assert.is_false(utils.paths_equal(missing_a, "/tmp/does-not-exist-b.lua"))
+    end)
+  end)
+
+  describe("find_bufnr", function()
+    it("should find an already-loaded buffer by exact path", function()
+      local path = vim.fn.tempname() .. "_find_bufnr.lua"
+      local bufnr = vim.fn.bufadd(path)
+      vim.fn.bufload(bufnr)
+
+      assert.are.equal(bufnr, utils.find_bufnr(path))
+
+      vim.api.nvim_buf_delete(bufnr, { force = true })
+    end)
+
+    it("should return -1 when no buffer matches", function()
+      assert.are.equal(-1, utils.find_bufnr("/no/such/buffer-should-exist.lua"))
+    end)
+  end)
+
   describe("ensure_dir", function()
     local temp_dir
 
