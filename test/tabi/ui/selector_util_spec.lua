@@ -48,5 +48,22 @@ describe("tabi.ui.selector.util", function()
 
       assert.are.equal("   " .. string.rep("a", 57) .. "...", lines[10])
     end)
+
+    it("should truncate multibyte note content by characters", function()
+      local lines = selector_util.build_preview_lines(make_session({
+        { file = "a.lua", line = 1, content = string.rep("あ", 100) },
+      }))
+
+      assert.are.equal("   " .. string.rep("あ", 57) .. "...", lines[10])
+    end)
+
+    it("should not truncate multibyte note content within the limit", function()
+      local content = string.rep("あ", 60)
+      local lines = selector_util.build_preview_lines(make_session({
+        { file = "a.lua", line = 1, content = content },
+      }))
+
+      assert.are.equal("   " .. content, lines[10])
+    end)
   end)
 end)
