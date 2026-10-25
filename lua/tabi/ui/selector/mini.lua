@@ -26,9 +26,12 @@ function M.select_session(on_select, opts)
     return
   end
 
-  -- Build picker items. mini.pick matches/displays table items via their `text` field.
+  -- Build picker items. mini.pick displays table items via their `text` field.
+  -- Matching is done against session names only (see `match` below).
   local items = {}
+  local names = {}
   for _, session in ipairs(sessions) do
+    table.insert(names, session.name)
     local date = utils.format_timestamp(session.updated_at, "%Y-%m-%d")
     table.insert(items, {
       text = string.format(
@@ -52,6 +55,11 @@ function M.select_session(on_select, opts)
     source = {
       items = items,
       name = "Sessions",
+      -- Match against session names only (like the telescope selector) so that
+      -- the query does not hit note counts, dates or branches in the display text.
+      match = function(_, inds, query)
+        return _G.MiniPick.default_match(names, inds, query)
+      end,
       -- The chosen item is handled via MiniPick.start()'s return value. Override
       -- the default choose, which would print the whole item (our items have no
       -- path or buffer). Returning false stops the picker.

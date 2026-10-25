@@ -263,6 +263,31 @@ describe("tabi.ui.selector.mini", function()
         assert.is_false(printed)
       end)
 
+      it("should match against session names only", function()
+        local s = session_module.create("matched-name")
+        s.branch = "feature/test"
+        session_module.save(s)
+
+        local match_args = nil
+        _G.MiniPick.default_match = function(stritems, inds, query)
+          match_args = { stritems = stritems, inds = inds, query = query }
+          return inds
+        end
+
+        mini_selector.select_session(function() end)
+
+        local source = mock_start.last_opts.source
+        local stritems = vim.tbl_map(function(item)
+          return item.text
+        end, source.items)
+        local result = source.match(stritems, { 1 }, { "f" })
+
+        assert.are.same({ "matched-name" }, match_args.stritems)
+        assert.are.same({ 1 }, match_args.inds)
+        assert.are.same({ "f" }, match_args.query)
+        assert.are.same({ 1 }, result)
+      end)
+
       it("should pass through ui.mini.opts to MiniPick.start", function()
         session_module.create("test")
         config.options.ui.mini.opts = {
